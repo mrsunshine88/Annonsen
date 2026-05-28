@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { PrismaClient } from '@prisma/client';
+import InstallAppBox from "@/components/InstallAppBox";
 
 const prisma = new PrismaClient();
 
@@ -42,6 +43,8 @@ export default async function Home() {
           </button>
         </form>
       </section>
+
+      <InstallAppBox />
 
       {/* Categories */}
       <section style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
