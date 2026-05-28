@@ -89,7 +89,7 @@ export default function MessagesPage() {
     
     return () => {
       clearInterval(interval);
-      if (channel) supabase.removeChannel(channel);
+      if (channel) supabase?.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

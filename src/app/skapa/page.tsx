@@ -21,6 +21,7 @@ export default async function SkapaAnnonsPage() {
   let defaultLocation: string | null = null;
   if (session?.user?.email) {
     const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
       select: { 
         autoLocation: true, 
         defaultLocation: true,
