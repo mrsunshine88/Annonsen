@@ -18,7 +18,6 @@ export async function POST(req: Request) {
     }
 
     const urls: string[] = [];
-    const useVercelBlob = process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== "ersätt_mig_med_din_riktiga_token_från_vercel";
 
     for (const file of files) {
       const bytes = await file.arrayBuffer();
@@ -26,25 +25,12 @@ export async function POST(req: Request) {
       const extension = file.name.split(".").pop();
       const filename = `${uuidv4()}.${extension}`;
 
-      if (useVercelBlob) {
-        // Ladda upp till Vercel Blob
-        const blob = await put(filename, buffer, {
-          access: 'public',
-          token: process.env.BLOB_READ_WRITE_TOKEN // Valfritt, Vercel plockar den från env, men bra att vara explicit
-        });
-        urls.push(blob.url);
-      } else {
-        // Lokal fallback (fs)
-        const uploadDir = path.join(process.cwd(), "public/uploads");
-        try {
-          await mkdir(uploadDir, { recursive: true });
-        } catch (e) {
-          // Ignorera fel om den redan finns
-        }
-        const filepath = path.join(uploadDir, filename);
-        await writeFile(filepath, buffer);
-        urls.push(`/uploads/${filename}`);
-      }
+      // Ladda upp till Vercel Blob
+      const blob = await put(filename, buffer, {
+        access: 'public',
+        token: process.env.BLOB_READ_WRITE_TOKEN // Valfritt men bra för Vercel
+      });
+      urls.push(blob.url);
     }
 
     return NextResponse.json({ urls }, { status: 201 });
