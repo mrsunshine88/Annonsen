@@ -57,7 +57,7 @@ export const authOptions: any = {
     })
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session }: any) {
       if (user) {
         token.id = user.id;
         token.isAdmin = (user as any).isAdmin;
@@ -70,7 +70,7 @@ export const authOptions: any = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as any).isAdmin = token.isAdmin as boolean;
