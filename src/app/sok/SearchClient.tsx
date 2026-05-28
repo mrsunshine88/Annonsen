@@ -164,6 +164,8 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
     fetchAds();
   };
 
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
   return (
     <div style={{ display: "flex", gap: "2rem", flexDirection: "row", flexWrap: "wrap" }}>
       
@@ -171,191 +173,9 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
       <aside className="search-sidebar" style={{ width: "300px", flexShrink: 0 }}>
         <form onSubmit={handleSearch} className="glass-panel" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
           <h3 style={{ marginBottom: "0.5rem" }}>Filtrera</h3>
-          
           <div>
             <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Sökord</label>
             <input type="text" className="input-field" value={q} onChange={e => setQ(e.target.value)} placeholder="T.ex Volvo S70" />
-          </div>
-
-          <div>
-            <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Säljare</label>
-            <select className="input-field" value={advertiserType} onChange={e => setAdvertiserType(e.target.value)}>
-              <option value="Alla">Alla</option>
-              <option value="Privat">Endast Privat</option>
-              <option value="Företag">Endast Företag</option>
-            </select>
-          </div>
-
-          <div>
-            <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Huvudkategori</label>
-            <select 
-              className="input-field" 
-              value={mainCategoryId} 
-              onChange={e => { 
-                setMainCategoryId(e.target.value); 
-                setSubCategoryId("");
-                setSubSubCategoryId("");
-              }}
-            >
-              <option value="">Alla kategorier</option>
-              {categories.map(mainCat => (
-                <option key={mainCat.id} value={mainCat.id}>{mainCat.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {mainCategoryId && categories.find(c => c.id === mainCategoryId)?.subcategories?.length > 0 && (
-            <div>
-              <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Underkategori</label>
-              <select 
-                className="input-field" 
-                value={subCategoryId} 
-                onChange={e => { 
-                  setSubCategoryId(e.target.value); 
-                  setSubSubCategoryId("");
-                }}
-              >
-                <option value="">Alla inom {categories.find(c => c.id === mainCategoryId)?.name}</option>
-                {categories.find(c => c.id === mainCategoryId)?.subcategories.map((sub: any) => (
-                  <option key={sub.id} value={sub.id}>{sub.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {subCategoryId && categories.find(c => c.id === mainCategoryId)?.subcategories?.find((s: any) => s.id === subCategoryId)?.subcategories?.length > 0 && (
-            <div>
-              <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Specifik Kategori</label>
-              <select 
-                className="input-field" 
-                value={subSubCategoryId} 
-                onChange={e => { 
-                  setSubSubCategoryId(e.target.value); 
-                }}
-              >
-                <option value="">Alla inom {categories.find(c => c.id === mainCategoryId)?.subcategories?.find((s: any) => s.id === subCategoryId)?.name}</option>
-                {categories.find(c => c.id === mainCategoryId)?.subcategories?.find((s: any) => s.id === subCategoryId)?.subcategories.map((sub: any) => (
-                  <option key={sub.id} value={sub.id}>{sub.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Min Pris</label>
-              <input type="number" className="input-field" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Max Pris</label>
-              <input type="number" className="input-field" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
-            </div>
-          </div>
-
-          <div>
-            <label style={{ fontSize: "0.9rem", fontWeight: 600, display: "block", marginBottom: "0.5rem" }}>Län / Plats</label>
-            <div style={{ maxHeight: "150px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0.5rem", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md) var(--radius-md) 0 0", backgroundColor: "var(--color-bg-surface)" }}>
-              {["Blekinge", "Dalarna", "Gotland", "Gävleborg", "Halland", "Jämtland", "Jönköping", "Kalmar", "Kronoberg", "Norrbotten", "Skåne", "Stockholm", "Södermanland", "Uppsala", "Värmland", "Västerbotten", "Västernorrland", "Västmanland", "Västra Götaland", "Örebro", "Östergötland"].map(loc => (
-                <label key={loc} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
-                  <input 
-                    type="checkbox" 
-                    checked={locations.includes(loc)}
-                    onChange={(e) => {
-                      if (e.target.checked) setLocations([...locations, loc]);
-                      else setLocations(locations.filter(l => l !== loc));
-                    }}
-                  />
-                  {loc}
-                </label>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-              <button 
-                type="button" 
-                onClick={() => setLocations([])} 
-                className="btn-secondary" 
-                style={{ flex: 1, padding: "0.25rem", fontSize: "0.8rem", borderRadius: "0 0 0 var(--radius-md)" }}
-              >
-                Hela Sverige
-              </button>
-              <button 
-                type="button" 
-                onClick={() => {
-                  const centerLocation = baseLocation || (locations.length > 0 ? locations[0] : null);
-                  
-                  if (!centerLocation) {
-                    alert("Kunde inte avgöra din hemort. Välj ett län manuellt eller ställ in din plats i Inställningar.");
-                    return;
-                  }
-
-                  const adjacentMap: Record<string, string[]> = {
-                    "Blekinge": ["Skåne", "Kronoberg", "Kalmar"],
-                    "Dalarna": ["Jämtland", "Gävleborg", "Västmanland", "Örebro", "Värmland"],
-                    "Gotland": [],
-                    "Gävleborg": ["Västernorrland", "Jämtland", "Dalarna", "Västmanland", "Uppsala"],
-                    "Halland": ["Skåne", "Kronoberg", "Jönköping", "Västra Götaland"],
-                    "Jämtland": ["Västerbotten", "Västernorrland", "Gävleborg", "Dalarna"],
-                    "Jönköping": ["Halland", "Kronoberg", "Kalmar", "Östergötland", "Västra Götaland"],
-                    "Kalmar": ["Blekinge", "Kronoberg", "Jönköping", "Östergötland"],
-                    "Kronoberg": ["Skåne", "Blekinge", "Kalmar", "Jönköping", "Halland"],
-                    "Norrbotten": ["Västerbotten"],
-                    "Skåne": ["Halland", "Kronoberg", "Blekinge"],
-                    "Stockholm": ["Uppsala", "Södermanland"],
-                    "Södermanland": ["Stockholm", "Västmanland", "Örebro", "Östergötland"],
-                    "Uppsala": ["Stockholm", "Västmanland", "Gävleborg"],
-                    "Värmland": ["Dalarna", "Örebro", "Västra Götaland"],
-                    "Västerbotten": ["Norrbotten", "Jämtland", "Västernorrland"],
-                    "Västernorrland": ["Västerbotten", "Jämtland", "Gävleborg"],
-                    "Västmanland": ["Dalarna", "Gävleborg", "Uppsala", "Södermanland", "Örebro"],
-                    "Västra Götaland": ["Halland", "Jönköping", "Östergötland", "Örebro", "Värmland"],
-                    "Örebro": ["Dalarna", "Västmanland", "Södermanland", "Östergötland", "Västra Götaland", "Värmland"],
-                    "Östergötland": ["Kalmar", "Jönköping", "Västra Götaland", "Örebro", "Södermanland"]
-                  };
-                  
-                  const adj = adjacentMap[centerLocation] || [];
-                  const allAdjChecked = adj.length > 0 && adj.every(a => locations.includes(a));
-
-                  if (allAdjChecked) {
-                    // Stäng av angränsande: ta bort grannarna från valda län
-                    setLocations(locations.filter(l => !adj.includes(l)));
-                  } else {
-                    // Slå på angränsande: Lägg till hemort + grannar
-                    const newLocs = new Set(locations);
-                    newLocs.add(centerLocation);
-                    adj.forEach(a => newLocs.add(a));
-                    setLocations(Array.from(newLocs));
-                  }
-                }} 
-                className="btn-secondary" 
-                style={{ flex: 1, padding: "0.25rem", fontSize: "0.8rem", borderRadius: "0 0 var(--radius-md) 0" }}
-              >
-                + Angränsande
-              </button>
-            </div>
-            
-            {availableCities.length > 0 && (
-              <div style={{ marginTop: "1rem", maxHeight: "150px", overflowY: "auto", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", padding: "0.5rem" }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>Filtrera på ort</div>
-                {availableCities.map(city => (
-                  <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", marginBottom: "0.25rem", cursor: "pointer" }}>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedCities.includes(city)}
-                      onChange={(e) => {
-                        let newCities;
-                        if (e.target.checked) {
-                          newCities = [...selectedCities, city];
-                        } else {
-                          newCities = selectedCities.filter(c => c !== city);
-                        }
-                        setSelectedCities(newCities);
-                      }}
-                    />
-                    {city}
-                  </label>
-                ))}
-              </div>
-            )}
           </div>
 
           <div>
@@ -363,58 +183,258 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
             <input type="text" className="input-field" value={brand} onChange={e => setBrand(e.target.value)} placeholder="T.ex. Apple, Volvo" />
           </div>
 
-          {isCar && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--color-border)" }}>
-              <h4 style={{ color: "var(--color-primary)", margin: 0 }}>Bilar</h4>
-
+          {!showAdvancedFilters ? (
+            <button 
+              type="button" 
+              onClick={() => setShowAdvancedFilters(true)} 
+              className="btn-secondary" 
+              style={{ padding: "0.5rem", fontSize: "0.9rem", marginTop: "0.5rem" }}
+            >
+              + Visa fler filter (Kategori, Pris, Ort etc.)
+            </button>
+          ) : (
+            <>
               <div>
-                <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Modell</label>
-                <input type="text" className="input-field" value={model} onChange={e => setModel(e.target.value)} placeholder="T.ex. S70" />
-              </div>
-
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Min Miltal</label>
-                  <input type="number" className="input-field" value={minMileage} onChange={e => setMinMileage(e.target.value)} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Max Miltal</label>
-                  <input type="number" className="input-field" value={maxMileage} onChange={e => setMaxMileage(e.target.value)} />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Min År</label>
-                  <input type="number" className="input-field" value={minYear} onChange={e => setMinYear(e.target.value)} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Max År</label>
-                  <input type="number" className="input-field" value={maxYear} onChange={e => setMaxYear(e.target.value)} />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Växellåda</label>
-                <select className="input-field" value={gearbox} onChange={e => setGearbox(e.target.value)}>
-                  <option value="">Alla</option>
-                  <option value="Automat">Automat</option>
-                  <option value="Manuell">Manuell</option>
+                <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Säljare</label>
+                <select className="input-field" value={advertiserType} onChange={e => setAdvertiserType(e.target.value)}>
+                  <option value="Alla">Alla</option>
+                  <option value="Privat">Endast Privat</option>
+                  <option value="Företag">Endast Företag</option>
                 </select>
               </div>
 
               <div>
-                <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Drivmedel</label>
-                <select className="input-field" value={fuel} onChange={e => setFuel(e.target.value)}>
-                  <option value="">Alla</option>
-                  <option value="Bensin">Bensin</option>
-                  <option value="Diesel">Diesel</option>
-                  <option value="El">El</option>
-                  <option value="Hybrid">Hybrid</option>
+                <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Huvudkategori</label>
+                <select 
+                  className="input-field" 
+                  value={mainCategoryId} 
+                  onChange={e => { 
+                    setMainCategoryId(e.target.value); 
+                    setSubCategoryId("");
+                    setSubSubCategoryId("");
+                  }}
+                >
+                  <option value="">Alla kategorier</option>
+                  {categories.map(mainCat => (
+                    <option key={mainCat.id} value={mainCat.id}>{mainCat.name}</option>
+                  ))}
                 </select>
               </div>
 
-            </div>
+              {mainCategoryId && categories.find(c => c.id === mainCategoryId)?.subcategories?.length > 0 && (
+                <div>
+                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Underkategori</label>
+                  <select 
+                    className="input-field" 
+                    value={subCategoryId} 
+                    onChange={e => { 
+                      setSubCategoryId(e.target.value); 
+                      setSubSubCategoryId("");
+                    }}
+                  >
+                    <option value="">Alla inom {categories.find(c => c.id === mainCategoryId)?.name}</option>
+                    {categories.find(c => c.id === mainCategoryId)?.subcategories.map((sub: any) => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {subCategoryId && categories.find(c => c.id === mainCategoryId)?.subcategories?.find((s: any) => s.id === subCategoryId)?.subcategories?.length > 0 && (
+                <div>
+                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Specifik Kategori</label>
+                  <select 
+                    className="input-field" 
+                    value={subSubCategoryId} 
+                    onChange={e => { 
+                      setSubSubCategoryId(e.target.value); 
+                    }}
+                  >
+                    <option value="">Alla inom {categories.find(c => c.id === mainCategoryId)?.subcategories?.find((s: any) => s.id === subCategoryId)?.name}</option>
+                    {categories.find(c => c.id === mainCategoryId)?.subcategories?.find((s: any) => s.id === subCategoryId)?.subcategories.map((sub: any) => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Min Pris</label>
+                  <input type="number" className="input-field" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Max Pris</label>
+                  <input type="number" className="input-field" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "0.9rem", fontWeight: 600, display: "block", marginBottom: "0.5rem" }}>Län / Plats</label>
+                <div style={{ maxHeight: "150px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0.5rem", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md) var(--radius-md) 0 0", backgroundColor: "var(--color-bg-surface)" }}>
+                  {["Blekinge", "Dalarna", "Gotland", "Gävleborg", "Halland", "Jämtland", "Jönköping", "Kalmar", "Kronoberg", "Norrbotten", "Skåne", "Stockholm", "Södermanland", "Uppsala", "Värmland", "Västerbotten", "Västernorrland", "Västmanland", "Västra Götaland", "Örebro", "Östergötland"].map(loc => (
+                    <label key={loc} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
+                      <input 
+                        type="checkbox" 
+                        checked={locations.includes(loc)}
+                        onChange={(e) => {
+                          if (e.target.checked) setLocations([...locations, loc]);
+                          else setLocations(locations.filter(l => l !== loc));
+                        }}
+                      />
+                      {loc}
+                    </label>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setLocations([])} 
+                    className="btn-secondary" 
+                    style={{ flex: 1, padding: "0.25rem", fontSize: "0.8rem", borderRadius: "0 0 0 var(--radius-md)" }}
+                  >
+                    Hela Sverige
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const centerLocation = baseLocation || (locations.length > 0 ? locations[0] : null);
+                      
+                      if (!centerLocation) {
+                        alert("Kunde inte avgöra din hemort. Välj ett län manuellt eller ställ in din plats i Inställningar.");
+                        return;
+                      }
+
+                      const adjacentMap: Record<string, string[]> = {
+                        "Blekinge": ["Skåne", "Kronoberg", "Kalmar"],
+                        "Dalarna": ["Jämtland", "Gävleborg", "Västmanland", "Örebro", "Värmland"],
+                        "Gotland": [],
+                        "Gävleborg": ["Västernorrland", "Jämtland", "Dalarna", "Västmanland", "Uppsala"],
+                        "Halland": ["Skåne", "Kronoberg", "Jönköping", "Västra Götaland"],
+                        "Jämtland": ["Västerbotten", "Västernorrland", "Gävleborg", "Dalarna"],
+                        "Jönköping": ["Halland", "Kronoberg", "Kalmar", "Östergötland", "Västra Götaland"],
+                        "Kalmar": ["Blekinge", "Kronoberg", "Jönköping", "Östergötland"],
+                        "Kronoberg": ["Skåne", "Blekinge", "Kalmar", "Jönköping", "Halland"],
+                        "Norrbotten": ["Västerbotten"],
+                        "Skåne": ["Halland", "Kronoberg", "Blekinge"],
+                        "Stockholm": ["Uppsala", "Södermanland"],
+                        "Södermanland": ["Stockholm", "Västmanland", "Örebro", "Östergötland"],
+                        "Uppsala": ["Stockholm", "Västmanland", "Gävleborg"],
+                        "Värmland": ["Dalarna", "Örebro", "Västra Götaland"],
+                        "Västerbotten": ["Norrbotten", "Jämtland", "Västernorrland"],
+                        "Västernorrland": ["Västerbotten", "Jämtland", "Gävleborg"],
+                        "Västmanland": ["Dalarna", "Gävleborg", "Uppsala", "Södermanland", "Örebro"],
+                        "Västra Götaland": ["Halland", "Jönköping", "Östergötland", "Örebro", "Värmland"],
+                        "Örebro": ["Dalarna", "Västmanland", "Södermanland", "Östergötland", "Västra Götaland", "Värmland"],
+                        "Östergötland": ["Kalmar", "Jönköping", "Västra Götaland", "Örebro", "Södermanland"]
+                      };
+                      
+                      const adj = adjacentMap[centerLocation] || [];
+                      const allAdjChecked = adj.length > 0 && adj.every(a => locations.includes(a));
+
+                      if (allAdjChecked) {
+                        setLocations(locations.filter(l => !adj.includes(l)));
+                      } else {
+                        const newLocs = new Set(locations);
+                        newLocs.add(centerLocation);
+                        adj.forEach(a => newLocs.add(a));
+                        setLocations(Array.from(newLocs));
+                      }
+                    }} 
+                    className="btn-secondary" 
+                    style={{ flex: 1, padding: "0.25rem", fontSize: "0.8rem", borderRadius: "0 0 var(--radius-md) 0" }}
+                  >
+                    + Angränsande
+                  </button>
+                </div>
+                
+                {availableCities.length > 0 && (
+                  <div style={{ marginTop: "1rem", maxHeight: "150px", overflowY: "auto", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", padding: "0.5rem" }}>
+                    <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>Filtrera på ort</div>
+                    {availableCities.map(city => (
+                      <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", marginBottom: "0.25rem", cursor: "pointer" }}>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedCities.includes(city)}
+                          onChange={(e) => {
+                            let newCities;
+                            if (e.target.checked) {
+                              newCities = [...selectedCities, city];
+                            } else {
+                              newCities = selectedCities.filter(c => c !== city);
+                            }
+                            setSelectedCities(newCities);
+                          }}
+                        />
+                        {city}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {isCar && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--color-border)" }}>
+                  <h4 style={{ color: "var(--color-primary)", margin: 0 }}>Bilar</h4>
+
+                  <div>
+                    <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Modell</label>
+                    <input type="text" className="input-field" value={model} onChange={e => setModel(e.target.value)} placeholder="T.ex. S70" />
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Min Miltal</label>
+                      <input type="number" className="input-field" value={minMileage} onChange={e => setMinMileage(e.target.value)} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Max Miltal</label>
+                      <input type="number" className="input-field" value={maxMileage} onChange={e => setMaxMileage(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Min År</label>
+                      <input type="number" className="input-field" value={minYear} onChange={e => setMinYear(e.target.value)} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Max År</label>
+                      <input type="number" className="input-field" value={maxYear} onChange={e => setMaxYear(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Växellåda</label>
+                    <select className="input-field" value={gearbox} onChange={e => setGearbox(e.target.value)}>
+                      <option value="">Alla</option>
+                      <option value="Automat">Automat</option>
+                      <option value="Manuell">Manuell</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>Drivmedel</label>
+                    <select className="input-field" value={fuel} onChange={e => setFuel(e.target.value)}>
+                      <option value="">Alla</option>
+                      <option value="Bensin">Bensin</option>
+                      <option value="Diesel">Diesel</option>
+                      <option value="El">El</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <button 
+                type="button" 
+                onClick={() => setShowAdvancedFilters(false)} 
+                className="btn-secondary" 
+                style={{ padding: "0.5rem", fontSize: "0.9rem", marginTop: "0.5rem" }}
+              >
+                - Dölj filter
+              </button>
+            </>
           )}
 
           <button type="submit" className="btn-primary" style={{ marginTop: "1rem" }}>Använd Filter</button>
