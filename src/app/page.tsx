@@ -1,66 +1,64 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import React from 'react';
+import Link from 'next/link';
+import { PrismaClient } from '@prisma/client';
 
-export default function Home() {
+const prisma = new PrismaClient();
+
+export default async function Home() {
+  const categories = await prisma.category.findMany({
+    where: { parentId: null }
+  });
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+      {/* Hero Section */}
+      <section 
+        className="glass-panel animate-fade-in" 
+        style={{ 
+          padding: '4rem 2rem', 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%)',
+          border: '1px solid var(--color-border)'
+        }}
+      >
+        <h1 style={{ fontSize: '3rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
+          Hitta det du söker, exakt.
+        </h1>
+        <p style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+          Slipp bruset. Sök på det du vill ha och få bara upp exakta träffar. Välkommen till en renare marknadsplats.
+        </p>
+        
+        {/* Search Bar */}
+        <form action="/sok" method="GET" style={{ display: 'flex', gap: '0.5rem', maxWidth: '700px', margin: '0 auto' }}>
+          <input 
+            type="text" 
+            name="q"
+            placeholder="Vad letar du efter? (ex. soffa, cykel)" 
+            className="input-field"
+            style={{ padding: '1rem', fontSize: '1.1rem' }}
+          />
+          <button type="submit" className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+            Sök exakt
+          </button>
+        </form>
+      </section>
+
+      {/* Categories */}
+      <section style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: 'var(--color-text)' }}>Kategorier</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+          {categories.map((category) => (
+            <Link 
+              key={category.id} 
+              href={`/sok?category=${category.id}`} 
+              className="glass-panel search-pill" 
+              style={{ padding: '0.75rem 1.5rem', borderRadius: '50px', color: 'var(--color-primary)', fontWeight: 500, transition: 'all 0.2s' }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              {category.name}
+            </Link>
+          ))}
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
     </div>
   );
 }

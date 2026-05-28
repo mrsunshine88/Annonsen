@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password         String
+  autoLocation     Boolean   @default(true) // För IP-baserad platsigenkänning
+  defaultLocation  String?   // Sparat Län
+  isAdmin          Boolean   @default(false)
+  isRoot           Boolean   @default(false) // Skyddar kontot från att tas bort eller ändras i admin
+  isBlocked        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Företagsfält
+  accountType        String    @default("Privat") // "Privat" eller "Företag"
+  companyName        String?
+  companyOrgNr       String?
+  companyAddress     String?
+  companyZipCode     String?
+  companyCity        String?
+  companyWebsite     String?
+  companyLogoUrl     String?
+  companyDescription String?
+  companyOpeningHours String?
+  companyPhone       String?
+
+  // Unika företagspriser
+  customCompanyAdPrice           Int?
+  customCompanySubscriptionPrice Int?
+
+  ads              Ad[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+model Category {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  parentId String?
+
+  parent        Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  subcategories Category[] @relation("CategoryToCategory")
+  ads           Ad[]
+  customPrice   Int? // Eget pris för denna kategori (skriver över standard)
+}
+
+model Ad {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  price       Int
+  imageUrls   String[]
+  phoneNumber String?
+  hidePhone   Boolean  @default(false)
+  isPaid      Boolean  @default(true) // Sätts till false om betalning krävs
+  paymentId   String?  // Swish payment request ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Generella filter
+  location       String? // Län
+  city           String? // Ort (t.ex. Ramdala)
+  zipCode        String? // Postnummer (t.ex. 37352)
+  advertiserType String? // Privat, Företag
+
+  // Fordonsspecifika filter
+  mileage    Int? // Miltal
+  color      String? // Färg
+  gearbox    String? // Växellåda
+  brand      String? // Bilmärke
+  model      String? // Modell
+  year       Int? // Modellår
+  fuel       String? // Drivmedel
+  drivetrain String? // Drivhjul
+  horsepower Int? // Hästkrafter
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  senderId String
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  adId String
+  ad   Ad     @relation(fields: [adId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id              String  @id @default("default")
+  paymentsEnabled Boolean @default(false)
+  defaultAdPrice  Int     @default(0)
+  swishMode       String  @default("TEST") // "TEST" eller "LIVE"
+  swishAlias      String? // 123xxxxxxx
+  swishCert       String? // Sökväg/innehåll för cert
+  swishKey        String? // Sökväg/innehåll för nyckel
+  bumpEnabled     Boolean @default(false)
+  bumpPrice       Int     @default(0)
+  
+  // Företagspriser
+  companyAdPrice           Int @default(0) // Pris per annons för företag
+  companySubscriptionPrice Int @default(0) // Månadskostnad för företagssida
+}
