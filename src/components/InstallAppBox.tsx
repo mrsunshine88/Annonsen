@@ -5,17 +5,31 @@ import { useState, useEffect } from "react";
 export default function InstallAppBox() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Lyssna på när Chrome säger "Appen är redo att installeras!"
-    const handler = (e: any) => {
-      e.preventDefault(); // Stoppa webbläsarens egen (fula) lilla flik
-      setDeferredPrompt(e);
-    };
+    // Kontrollera om det är en mobilskärm (mindre än 768px)
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.innerWidth <= 768);
+      
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768);
+      };
+      window.addEventListener('resize', handleResize);
+      
+      // Lyssna på när Chrome säger "Appen är redo att installeras!"
+      const handler = (e: any) => {
+        e.preventDefault(); // Stoppa webbläsarens egen (fula) lilla flik
+        setDeferredPrompt(e);
+      };
 
-    window.addEventListener('beforeinstallprompt', handler);
+      window.addEventListener('beforeinstallprompt', handler);
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('beforeinstallprompt', handler);
+      };
+    }
   }, []);
 
   const handleInstallClick = async () => {
@@ -32,8 +46,8 @@ export default function InstallAppBox() {
     }
   };
 
-  if (!deferredPrompt || isDismissed) {
-    return null; // Visa inget om appen redan är installerad eller om användaren stängt rutan
+  if (!deferredPrompt || isDismissed || !isMobile) {
+    return null; // Visa inget om appen redan är installerad, på dator, eller om användaren stängt rutan
   }
 
   return (
