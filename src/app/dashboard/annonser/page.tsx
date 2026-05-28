@@ -8,7 +8,7 @@ import BackButton from "@/components/BackButton";
 const prisma = new PrismaClient();
 
 export default async function MyAdsPage() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   
   if (!session?.user?.email) return null;
 

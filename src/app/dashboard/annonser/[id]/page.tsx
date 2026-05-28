@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 export default async function UserEditAdPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
     redirect("/");

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 // Hämta alla användare
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }
@@ -40,7 +40,7 @@ export async function GET() {
 
 // Uppdatera användarstatus (blockera/admin)
 export async function PUT(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }
@@ -75,7 +75,7 @@ export async function PUT(req: Request) {
 
 // Radera konto helt
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }

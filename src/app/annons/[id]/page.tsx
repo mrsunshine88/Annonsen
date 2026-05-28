@@ -9,7 +9,7 @@ import BackButton from "@/components/BackButton";
 const prisma = new PrismaClient();
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   
   const resolvedParams = await params;
 

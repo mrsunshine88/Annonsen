@@ -7,7 +7,7 @@ import BackButton from "@/components/BackButton";
 const prisma = new PrismaClient();
 
 export default async function SearchPage() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   let autoLocation = true;
   let defaultLocation: string | null = null;
 

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 // Hämta konversationer
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }
@@ -39,7 +39,7 @@ export async function GET() {
 
 // Skicka nytt meddelande
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }

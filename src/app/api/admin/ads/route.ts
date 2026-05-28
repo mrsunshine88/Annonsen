@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 // Hämta alla annonser
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }
@@ -28,7 +28,7 @@ export async function GET() {
 
 // Rensa bilder på en annons
 export async function PUT(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }
@@ -78,7 +78,7 @@ export async function PUT(req: Request) {
 
 // Radera annons
 export async function DELETE(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 401 });
   }

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session: any = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
       return NextResponse.json({ error: "Obehörig" }, { status: 401 });
     }
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session: any = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
       return NextResponse.json({ error: "Obehörig" }, { status: 401 });
     }

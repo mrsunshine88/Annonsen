@@ -6,7 +6,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 const prisma = new PrismaClient();
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 403 });
   }
@@ -20,7 +20,7 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session: any = await getServerSession(authOptions);
   if (!session?.user?.email || !(session.user as any).isAdmin) {
     return NextResponse.json({ error: "Obehörig" }, { status: 403 });
   }
