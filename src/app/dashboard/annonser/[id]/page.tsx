@@ -47,7 +47,7 @@ export default async function UserEditAdPage({ params }: { params: Promise<{ id:
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <BackButton label="Avbryt / Tillbaka" />
+      <BackButton label="Tillbaka" />
       <h1 style={{ marginBottom: "2rem", color: "var(--color-primary)" }}>Redigera din annons</h1>
       <CreateAdForm categories={categories} initialData={ad} settings={settings} />
     </div>

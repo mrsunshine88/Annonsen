@@ -5,24 +5,51 @@ import { useState, useEffect } from "react";
 export default function AppBanner() {
   const [showBanner, setShowBanner] = useState(false);
   const [deviceType, setDeviceType] = useState<"ios" | "android" | "other">("other");
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    // Kontrollera om användaren är på mobil och vilket OS
     const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
     
     if (/android/i.test(userAgent)) {
       setDeviceType("android");
-      setShowBanner(true);
     } else if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
       setDeviceType("ios");
-      setShowBanner(true);
     }
-    
-    // Har användaren redan stängt bannern under denna session?
-    if (sessionStorage.getItem("appBannerClosed")) {
-      setShowBanner(false);
+
+    // Lyssna på Androids inbyggda app-installerare
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      if (!sessionStorage.getItem("appBannerClosed")) {
+        setShowBanner(true);
+      }
+    });
+
+    // För iOS där det inte finns någon auto-prompt
+    if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).navigator.standalone) {
+      if (!sessionStorage.getItem("appBannerClosed")) {
+        setShowBanner(true);
+      }
     }
   }, []);
+
+  const handleInstallClick = async () => {
+    if (deviceType === "ios") {
+      alert("Tryck på 'Dela'-knappen längst ner i Safari (fyrkanten med en pil) och välj 'Lägg till på hemskärmen' för att installera appen!");
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowBanner(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      alert("Du kan lägga till denna app på din hemskärm via webbläsarens meny ('Lägg till på startskärmen').");
+    }
+  };
 
   if (!showBanner) return null;
 
@@ -50,35 +77,26 @@ export default function AppBanner() {
       `}</style>
       
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <div style={{ 
-          width: "48px", 
-          height: "48px", 
-          backgroundColor: "var(--color-primary)", 
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "white",
-          fontWeight: "bold",
-          fontSize: "24px"
-        }}>
-          A
-        </div>
+        <img 
+          src="/icon-192x192.png" 
+          alt="Annonsen App Ikon" 
+          style={{ width: "48px", height: "48px", borderRadius: "12px", objectFit: "cover" }} 
+        />
         <div>
-          <h4 style={{ margin: 0, fontSize: "1rem" }}>Ladda ner Annonsen</h4>
+          <h4 style={{ margin: 0, fontSize: "1rem" }}>Annonsen</h4>
           <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
-            Bättre upplevelse i appen
+            Lägg till appen på din startskärm
           </p>
         </div>
       </div>
 
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         <button 
-          onClick={() => alert(`Laddar ner från ${deviceType === 'ios' ? 'App Store' : 'Google Play'}... (Kräver riktig applänk)`)}
+          onClick={handleInstallClick}
           className="btn-primary" 
           style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}
         >
-          Hämta
+          {deviceType === "ios" ? "Installera" : "Hämta"}
         </button>
         <button 
           onClick={() => {

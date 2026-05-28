@@ -14,6 +14,19 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Annonsen - Hitta det du söker, exakt",
   description: "En modern och premium marknadsplats för radannonser i Sverige.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Annonsen",
+  },
+};
+
+export const viewport = {
+  themeColor: "#0052cc",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default async function RootLayout({
