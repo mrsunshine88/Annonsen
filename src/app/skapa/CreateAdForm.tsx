@@ -112,7 +112,24 @@ export default function CreateAdForm({ categories, autoLocation = true, defaultL
       // 1. Ladda upp bilder om de finns
       if (files.length > 0) {
         const formData = new FormData();
-        files.forEach(file => formData.append("files", file));
+        
+        // Ladda komprimeringsbiblioteket dynamiskt
+        const imageCompression = (await import("browser-image-compression")).default;
+        const compressionOptions = {
+          maxSizeMB: 0.8, // Max 800 kB
+          maxWidthOrHeight: 1600,
+          useWebWorker: true,
+        };
+
+        for (const file of files) {
+          try {
+            const compressedFile = await imageCompression(file, compressionOptions);
+            formData.append("files", compressedFile);
+          } catch (error) {
+            console.warn("Bildkomprimering misslyckades, använder originalbild", error);
+            formData.append("files", file);
+          }
+        }
         
         const uploadRes = await fetch("/api/upload", {
           method: "POST",

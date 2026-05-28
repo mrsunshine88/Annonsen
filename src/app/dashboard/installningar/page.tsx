@@ -88,8 +88,23 @@ export default function SettingsPage() {
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     setUploadingLogo(true);
+    
+    let fileToUpload = e.target.files[0];
+    
+    try {
+      const imageCompression = (await import("browser-image-compression")).default;
+      const options = {
+        maxSizeMB: 0.5, // Företagsloggor kan vara små (max 500kb)
+        maxWidthOrHeight: 800,
+        useWebWorker: true
+      };
+      fileToUpload = await imageCompression(fileToUpload, options);
+    } catch (err) {
+      console.warn("Bildkomprimering misslyckades", err);
+    }
+
     const formData = new FormData();
-    formData.append("files", e.target.files[0]);
+    formData.append("files", fileToUpload);
 
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });

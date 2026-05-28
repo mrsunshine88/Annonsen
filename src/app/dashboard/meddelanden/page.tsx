@@ -3,6 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
+
+// Initiera Supabase-klient (endast på klientsidan)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 export default function MessagesPage() {
   const searchParams = useSearchParams();
@@ -60,8 +66,31 @@ export default function MessagesPage() {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 10000);
-    return () => clearInterval(interval);
+    
+    // Sätt upp Supabase Realtime om nycklar finns
+    let channel: any;
+    if (supabase) {
+      channel = supabase
+        .channel('public:Message')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'Message' },
+          (payload) => {
+            // När ett nytt meddelande skapas i databasen, hämta alla meddelanden igen
+            // (Eller lägg till i state manuellt, men fetchMessages är enklast för att få med relationer)
+            fetchMessages();
+          }
+        )
+        .subscribe();
+    }
+
+    // Fallback till polling om Supabase inte är konfigurerat (eller som extra säkerhet)
+    const interval = setInterval(fetchMessages, 15000);
+    
+    return () => {
+      clearInterval(interval);
+      if (channel) supabase.removeChannel(channel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
