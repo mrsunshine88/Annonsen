@@ -7,7 +7,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Link from "next/link";
 
 import Navbar from "@/components/Navbar";
-import AppBanner from "@/components/AppBanner";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,8 +39,8 @@ export default async function RootLayout({
     <html lang="sv">
       <body className={inter.className}>
         <Providers>
+          <ServiceWorkerRegister />
           <Navbar />
-          <AppBanner />
           <main className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '2rem', paddingBottom: '2rem' }}>
             {children}
           </main>
