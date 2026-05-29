@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
                   )}
                 </td>
                 <td style={{ padding: "1rem", textAlign: "right", display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-                  {user.isRoot ? (
+                  {user.isRoot || user.email === 'apersson508@gmail.com' ? (
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", fontStyle: "italic", padding: "0.4rem 0.8rem", display: "inline-block", background: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)" }}>
                       Root-konto (Skyddat)
                     </span>

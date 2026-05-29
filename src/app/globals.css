@@ -204,8 +204,14 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
   box-shadow: var(--shadow-md);
 }
 
+.dashboard-link {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
 .dashboard-link:hover {
-  background-color: var(--color-bg-subtle);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
   color: var(--color-primary);
 }
 

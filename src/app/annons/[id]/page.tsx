@@ -167,14 +167,16 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
               </div>
             )}
             
-            <AdActions 
-              adId={ad.id} 
-              authorId={ad.author.id} 
-              authorName={ad.author.companyName || ad.author.name || "Anonym säljare"} 
-              initialIsFavorite={initialIsFavorite} 
-              initialIsFollowing={initialIsFollowing} 
-              isLoggedIn={!!loggedInUserId} 
-            />
+            {!isOwner && (
+              <AdActions 
+                adId={ad.id} 
+                authorId={ad.author.id} 
+                authorName={ad.author.companyName || ad.author.name || "Anonym säljare"} 
+                initialIsFavorite={initialIsFavorite} 
+                initialIsFollowing={initialIsFollowing} 
+                isLoggedIn={!!loggedInUserId} 
+              />
+            )}
           </div>
 
         </div>

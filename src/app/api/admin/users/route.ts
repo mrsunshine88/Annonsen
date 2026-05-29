@@ -53,7 +53,7 @@ export async function PUT(req: Request) {
     }
 
     const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-    if (targetUser?.isRoot) {
+    if (targetUser?.isRoot || targetUser?.email === 'apersson508@gmail.com') {
       return NextResponse.json({ error: "Root-kontot kan inte modifieras" }, { status: 403 });
     }
 
@@ -88,7 +88,7 @@ export async function DELETE(req: Request) {
     if (userId === session.user.id) return NextResponse.json({ error: "Du kan inte radera dig själv" }, { status: 400 });
 
     const targetUser = await prisma.user.findUnique({ where: { id: userId } });
-    if (targetUser?.isRoot) {
+    if (targetUser?.isRoot || targetUser?.email === 'apersson508@gmail.com') {
       return NextResponse.json({ error: "Root-kontot kan inte raderas" }, { status: 403 });
     }
 

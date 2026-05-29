@@ -109,7 +109,7 @@ export default function Navbar() {
 
       {/* Mobilmeny (Rullgardin) */}
       {mobileMenuOpen && (
-        <div className="mobile-menu glass-panel" style={{ zIndex: 999, borderRadius: "0 0 var(--radius-md) var(--radius-md)" }}>
+        <div className="mobile-menu" style={{ background: "var(--color-bg-surface)", boxShadow: "var(--shadow-md)", zIndex: 999, borderRadius: "0 0 var(--radius-md) var(--radius-md)" }}>
           <Link href="/skapa" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontWeight: 600, color: "var(--color-primary)" }}>
             {isCompany ? "Företagsannons" : "Skapa annons"}
           </Link>

@@ -1,0 +1,110 @@
+# Systemarkitektur: Annonsen
+
+Detta dokument fungerar som en ritning ("blueprint") för hela systemet bakom marknadsplatsen **Annonsen**. Det är skrivet för att en senior utvecklare snabbt ska kunna sätta sig in i projektet, förstå alla komponenter, varför vissa beslut har tagits och hur allt hänger ihop.
+
+---
+
+## 1. Systemöversikt
+**Annonsen** är en modern marknadsplats (likt Blocket) kombinerat med en jobbportal. Plattformen stöder privatpersoner, företag (med egna butikssidor) och arbetsgivare. Applikationen är byggd med server-side rendering (SSR) för blixtsnabb prestanda och bra SEO, samt klientside-interaktivitet där det behövs.
+
+## 2. Teknikstack
+Vi har valt en extremt modern och robust stack:
+- **Ramverk:** Next.js (App Router, React)
+- **Språk:** TypeScript (för typsäkerhet över hela linjen)
+- **Databas:** PostgreSQL (hostad på Supabase)
+- **ORM:** Prisma (för smidiga databasanrop och typsäkert schema)
+- **Autentisering:** NextAuth.js (Credentials-provider med bcrypt för lösenordskryptering)
+- **Styling:** Vanilla CSS (`globals.css`) utan tunga ramverk, optimerat med CSS-variabler för färgteman och responsiva verktygsklasser (t.ex. `.glass-panel`, `.grid-2-col`).
+- **Realtid:** Supabase Realtime-kanaler (WebSockets) används för chattmeddelanden.
+
+---
+
+## 3. Databasarkitektur (Prisma Schema)
+All data definieras i `prisma/schema.prisma`. Relationen är byggd med `onDelete: Cascade` på de flesta ställen för att undvika föräldralösa rader (ex. om en användare raderas försvinner deras annonser och meddelanden).
+
+### 3.1 Viktiga Modeller
+- **User:** Kärnan i systemet. Hanterar inloggning (`email`, `password`), roller (`isAdmin`, `isRoot`, `isBlocked`) och kontotyper (`Privat`, `Företag`, `Arbetsgivare`). Innehåller även fält för företagsinformation (ex. `companyName`, `companyOrgNr`).
+- **Category & Ad:** Annonserna. Varje `Ad` tillhör en `Category` (vilka stöder sub-kategorier via `parentId`). Annonsmodellen har både generella fält (pris, titel, ort) och fordonsspecifika fält (miltal, växellåda, m.m.).
+- **JobAd & JobApplication:** En separat tabellstruktur från vanliga annonser för att hålla domänerna rena. `JobAd` innehåller fält som `requirements`, `merits`, `scope`, `deadline`. `JobApplication` sparar CV/Personligt brev-URL:er och kopplar sökanden till jobbannonsen.
+- **Message:** Inbyggd chatt. Varje meddelande har `senderId` och `receiverId`. För att koppla chatten till en specifik kontext finns två *valfria* fält: `adId` (för varuannonser) och `jobAdId` (för platsannonser). Ett boolean-fält `isJobMessage` används för UI-märkning.
+- **Settings:** En singleton-modell (id = "default") som håller systeminställningar. Används för prissättning, Swish-inställningar (`swishAlias`, `swishCert`) och aktivering av betalningar.
+- **Favorite, Follow, AdReport:** Modeller för att bokmärka annonser, följa företag/säljare och anmäla opassande annonser till admin.
+
+---
+
+## 4. Roller och Säkerhet
+
+### 4.1 Kontotyper
+Vi har implementerat tre huvudspår för användare (styrs via fältet `accountType`):
+1. **Privat:** Standardanvändare. Kan lägga upp vanliga annonser.
+2. **Företag:** Har en egen "butikssida" (`/butik/[id]`). Kan prenumerera mot en månadskostnad och har ofta specialpriser på fordonsannonser.
+3. **Arbetsgivare:** Kan komma åt Jobb-dashboardet för att lägga ut platsannonser (`JobAd`) och ta emot/hantera `JobApplication`. Kan ha separat prissättning (per månad / per platsannons).
+
+### 4.2 Admin och Root
+- **Admin (`isAdmin: true`):** Har tillgång till `/admin/*`. Kan redigera andras annonser, blockera konton, tömma uppladdade bilder från regelbrytande annonser och sätta priser (Settings).
+- **Root-admin (`isRoot: true`):** Det existerar ett hårdkodat Root-konto (`apersson508@gmail.com`). *Varför?* För att skydda ägaren. Logiken i NextAuth garanterar att detta e-postkonto alltid tilldelas `isAdmin` och `isRoot` vid inloggning. Ett root-konto kan **aldrig** blockeras, få sina rättigheter borttagna, eller raderas av andra admins.
+
+### 4.3 Blockering
+När en admin blockerar en användare sätts `isBlocked = true` i databasen. På klientsidan (`Navbar.tsx` polling) och via NextAuths `authorize`-funktion verifieras detta, och den blockerade användaren loggas genast ut och nekas åtkomst.
+
+---
+
+## 5. Kärnfunktioner & Flöden
+
+### 5.1 Annonsflödet (Skapa och Söka)
+- **Skapa:** Formuläret (`/skapa`) känner av vilken kategori som valts. Om "Bilar" väljs renderas extra input-fält för bilens specifikationer. Sidan hämtar `autoLocation` från användaren.
+- **Sök (`/sok`):** En robust sökmotor med Prisma's `contains` och `mode: "insensitive"`. Den hanterar söksträngar, kategorifiltrering, max/min-pris och plats.
+
+### 5.2 Jobbportalen
+En helt isolerad portal byggd sida-vid-sida med varuannonserna:
+- **Publikt (`/jobb` & `/jobb/[id]`):** Besökare kan söka och läsa platsannonser. Ansökan (`/jobb/[id]/ansok`) tvingar användaren att ladda upp CV och brev, vilka sedan skapar en `JobApplication` kopplad till annonsen.
+- **Arbetsgivare (`/dashboard/jobb/...`):** Här skapas annonsen. Arbetsgivaren kan se alla inkomna ansökningar i en tabell och ladda ner dokumenten. När de vill gå vidare klickar de "Kontakta i chatt" varpå de skickas till den interna meddelandecentralen.
+
+### 5.3 Meddelandesystem (Chatt)
+Chatten (`/dashboard/meddelanden`) använder sig av polling och WebSockets:
+- **Arkitektur:** När ett meddelande skickas via `POST /api/messages` sparas det i databasen. UI:t sorterar in meddelandena i en `Map` baserat på konversation (kombination av `annons-ID` och `motpartens ID`). 
+- **Notiser:** I `Navbar` ligger en lättviktig polling var 10:e sekund mot `/api/auth/status` som räknar `unreadCount` och visar en liten notis-bubbla om man fått nya svar.
+- **Realtid:** Vid tillgång till Supabase används `@supabase/supabase-js` för att lyssna på `INSERT`-events i tabellen `Message`. När ett nytt meddelande anländer laddas chatten om direkt.
+- **Jobb-integration:** Jobbansökningar triggar automatiskt ett första chattmeddelande (som markerats med `isJobMessage`). Detta visas i chatten med en tydlig "JOBB"-tagg, så företag inte blandar ihop jobbansökningar med frågor om en begagnad soffa.
+
+### 5.4 Inställningar och Swish (Betalning)
+Vi har byggt grunden för dynamiska betalningar:
+- `Settings`-modellen tillåter admin att sätta ett standardpris per annons.
+- Företag och Arbetsgivare har egna specifika fält (både för abonnemang och annonser). Systemet stöder också individuella "custom"-priser på användarnivå som trumfar de globala företagspriserna.
+- Admin kan slå på/av betalningskrav. Vid aktivering måste användare verifiera betalning (via Swish-integration framåt) innan annonsen får `isPaid = true`.
+
+---
+
+## 6. Mappstruktur (Next.js App Router)
+
+```text
+src/
+ ├── app/
+ │    ├── admin/            # Alla administrationssidor (konton, annonser, priser)
+ │    ├── api/              # Alla backend-rutter (auth, jobb, meddelanden, settings)
+ │    ├── dashboard/        # Användarnas egna paneler (mina annonser, meddelanden, etc)
+ │    ├── annons/           # Publika varuannonser (/annons/[id])
+ │    ├── jobb/             # Publika platsannonser (/jobb/[id])
+ │    ├── skapa/            # Skapa varuannons
+ │    ├── sok/              # Sökmotor för varuannonser
+ │    ├── page.tsx          # Startsidan (Hero & Sök)
+ │    └── globals.css       # Enda stilmallen (Vanilla CSS med variabler)
+ ├── components/            # Återanvändbara UI-element (Navbar, BackButton, m.fl)
+```
+
+---
+
+## 7. Frontend Design & Responsivitet
+Vi undvek Tailwind (på beställning) och byggde en ren, egen design med Vanilla CSS i `globals.css`:
+- **Glassmorphism:** Vi använder flitigt `.glass-panel` för att skapa kort och containers med frostad glas-effekt (`backdrop-filter`).
+- **Layout:** Klasserna `.grid-2-col` och `.responsive-flex` används rakt igenom hela systemet. På skrivbord visar de side-by-side layouter, men via CSS media-queries (`@media (max-width: 768px)`) faller de automatiskt ner i en enkel kolumn på mobiltelefoner.
+- **Teman:** Alla färger hämtas via CSS-variabler (`var(--color-primary)`). Detta gör att det är extremt enkelt att implementera eller finjustera dark mode genom att enbart ändra variablerna i en `@media (prefers-color-scheme: dark)`-block.
+
+---
+
+## 8. Framtida Utveckling / Att Tänka På
+- **Swish Integration:** Backend-rutterna för prishantering finns klara. För nästa steg behövs Swish e-handels-certifikat, vilka läggs in i `Settings`. En webhook (`/api/payments/webhook`) bör byggas för att asynkront ta emot "Betald"-bekräftelsen från Swish och ändra `isPaid` till `true`.
+- **Bildhantering:** Just nu emuleras filuppladdning i `/api/upload`. För produktionsmiljö behöver ni koppla denna route till en AWS S3-bucket, Supabase Storage eller Cloudinary för att hantera bilder och CV-filer.
+- **Email:** Det finns inga e-postutskick för återställning av lösenord. Integration mot t.ex. Resend eller SendGrid rekommenderas.
+
+Detta system är 100% dynamiskt och byggt för att enkelt kunna skalas upp både horisontellt (Next.js serverless) och vertikalt (PostgreSQL)!

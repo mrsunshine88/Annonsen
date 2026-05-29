@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               className="dashboard-link"
               style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
             >
-              Kostnad (Swish)
+              Privatperson
             </Link>
             <Link 
               href="/admin/foretag" 
