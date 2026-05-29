@@ -78,13 +78,13 @@ export default function Navbar() {
 
         {/* Skrivbordsmeny */}
         <nav className="navbar-desktop">
-          <Link href="/jobb" className="dashboard-link" style={{ padding: '0.5rem 1rem' }}>JOBB</Link>
+          <Link href="/jobb" className="dashboard-link">JOBB</Link>
           {status === "loading" ? null : session ? (
             <>
-              <Link href="/dashboard/annonser" className="dashboard-link" style={{ padding: '0.5rem 1rem' }}>Mina Annonser</Link>
-              <Link href="/dashboard/favoriter" className="dashboard-link" style={{ padding: '0.5rem 1rem' }}>Favoriter</Link>
-              <Link href="/dashboard/flodet" className="dashboard-link" style={{ padding: '0.5rem 1rem' }}>Flödet</Link>
-              <Link href="/dashboard/meddelanden" className="dashboard-link" style={{ padding: '0.5rem 1rem', position: 'relative' }}>
+              <Link href="/dashboard/annonser" className="dashboard-link">Mina Annonser</Link>
+              <Link href="/dashboard/favoriter" className="dashboard-link">Favoriter</Link>
+              <Link href="/dashboard/flodet" className="dashboard-link">Flödet</Link>
+              <Link href="/dashboard/meddelanden" className="dashboard-link" style={{ position: 'relative' }}>
                 Meddelanden
                 {unreadCount > 0 && (
                   <span style={{ position: 'absolute', top: '2px', right: '2px', background: 'red', color: 'white', borderRadius: '50%', padding: '0 6px', fontSize: '10px', fontWeight: 'bold' }}>
@@ -92,11 +92,11 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              <Link href="/dashboard/installningar" className="dashboard-link" style={{ padding: '0.5rem 1rem' }}>Inställningar</Link>
+              <Link href="/dashboard/installningar" className="dashboard-link">Inställningar</Link>
               {(session.user as any)?.isAdmin && (
-                <Link href="/admin/konton" className="dashboard-link" style={{ padding: '0.5rem 1rem', color: 'var(--color-primary)' }}>Admin</Link>
+                <Link href="/admin/konton" className="dashboard-link">Admin</Link>
               )}
-              <button onClick={() => signOut({ callbackUrl: '/' })} className="dashboard-link" style={{ padding: '0.5rem 1rem', color: 'var(--color-error)' }}>Logga ut</button>
+              <button onClick={() => signOut({ callbackUrl: '/' })} className="dashboard-link-danger">Logga ut</button>
             </>
           ) : (
             <Link href="/login" className="btn-secondary">Logga in</Link>

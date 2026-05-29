@@ -12,10 +12,10 @@
   --color-bg-surface: #ffffff;   /* Clean white for cards */
   --color-bg-subtle: #f1f5f9;    /* Slightly darker for subtle areas */
 
-  /* Typography */
-  --color-text-primary: #0f172a; /* Slate 900 */
-  --color-text-secondary: #475569; /* Slate 600 */
-  --color-text-muted: #94a3b8;   /* Slate 400 */
+  /* Typography - No more 90s black! */
+  --color-text-primary: #172554; /* Deep rich navy blue instead of black */
+  --color-text-secondary: #475569; /* Keep a blue-ish slate for readability */
+  --color-text-muted: #94a3b8;
 
   /* Borders & Dividers */
   --color-border: #e2e8f0;       /* Slate 200 */
@@ -99,8 +99,8 @@ button {
 
 /* Typography Utilities */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--color-text-primary);
-  font-weight: 700;
+  color: #1e3a8a; /* Deep vibrant navy for all headings */
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -226,13 +226,12 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
 }
 
 .dashboard-link {
-  color: var(--color-text-primary);
+  color: var(--color-primary);
   font-weight: 600;
   padding: 0.5rem 1rem;
   border-radius: 100px;
-  background-color: var(--color-bg-surface);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid transparent;
   transition: all var(--transition-fast);
 }
 
@@ -242,6 +241,24 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
   color: #ffffff !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.dashboard-link-danger {
+  color: var(--color-error);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-link-danger:hover {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .chat-list-item:hover {
