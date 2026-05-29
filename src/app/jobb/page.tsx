@@ -8,7 +8,17 @@ export default async function JobPortalPage({ searchParams }: { searchParams: { 
   const location = searchParams.location || "";
   const industry = searchParams.industry || "";
 
-  const whereClause: any = {};
+  const whereClause: any = {
+    author: {
+      OR: [
+        { accountType: "Privat" },
+        { 
+          accountType: { in: ["Företag", "Arbetsgivare"] },
+          companyPageApproved: true 
+        }
+      ]
+    }
+  };
 
   if (query) {
     whereClause.OR = [

@@ -52,7 +52,7 @@ export default function SettingsPage() {
     try {
       const payload: any = { autoLocation, defaultLocation };
       
-      if (accountType === "Företag") {
+      if (accountType === "Företag" || accountType === "Arbetsgivare") {
         payload.companyName = companyName;
         payload.companyOrgNr = companyOrgNr;
         payload.companyAddress = companyAddress;
@@ -178,9 +178,11 @@ export default function SettingsPage() {
         </div>
 
         {/* Företagsprofil */}
-        {accountType === "Företag" && (
+        {(accountType === "Företag" || accountType === "Arbetsgivare") && (
           <div style={{ padding: "1.5rem", backgroundColor: "var(--color-bg-surface)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)" }}>
-            <h3 style={{ marginBottom: "1.5rem" }}>Din Butiksprofil</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "1rem" }}>
+              <h3 style={{ margin: 0 }}>Din Företagsprofil</h3>
+            </div>
             
             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
               <div className="grid-2-col">

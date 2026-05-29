@@ -57,6 +57,15 @@ export async function GET(req: Request) {
     }
 
     const whereClause: any = {
+      author: {
+        OR: [
+          { accountType: "Privat" },
+          { 
+            accountType: { in: ["Företag", "Arbetsgivare"] },
+            companyPageApproved: true 
+          }
+        ]
+      },
       ...(categoryIds.length > 0 ? { categoryId: { in: categoryIds } } : {}),
       location: locations.length > 0 ? { in: locations } : undefined,
       city: cities.length > 0 ? { in: cities } : undefined,

@@ -2,10 +2,19 @@ import React from 'react';
 import Link from 'next/link';
 import { PrismaClient } from '@prisma/client';
 import InstallAppBox from "@/components/InstallAppBox";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
 
 const prisma = new PrismaClient();
 
 export default async function Home() {
+  const session: any = await getServerSession(authOptions);
+  
+  if (session?.user?.accountType === "Arbetsgivare") {
+    redirect("/jobb");
+  }
+
   const categories = await prisma.category.findMany({
     where: { parentId: null }
   });

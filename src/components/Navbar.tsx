@@ -62,7 +62,7 @@ export default function Navbar() {
   return (
     <header className="navbar-header">
       <div className="container navbar-container">
-        <Link href="/" className="navbar-logo" onClick={closeMenu}>
+        <Link href={isEmployer ? "/jobb" : "/"} className="navbar-logo" onClick={closeMenu}>
           Annonsen
         </Link>
 

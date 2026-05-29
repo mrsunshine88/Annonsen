@@ -17,13 +17,29 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const ad = await prisma.ad.findUnique({
     where: { id: resolvedParams.id },
     include: {
-      author: { select: { id: true, email: true, name: true, createdAt: true, accountType: true, companyName: true, companyOrgNr: true, companyAddress: true, companyCity: true, companyWebsite: true, companyLogoUrl: true, companyDescription: true, companyOpeningHours: true } },
+      author: { select: { id: true, email: true, name: true, createdAt: true, accountType: true, companyName: true, companyOrgNr: true, companyAddress: true, companyCity: true, companyWebsite: true, companyLogoUrl: true, companyDescription: true, companyOpeningHours: true, companyPageApproved: true } },
       category: { select: { name: true } }
     }
   });
 
   if (!ad) {
     notFound();
+  }
+
+  if ((ad.author.accountType === "Företag" || ad.author.accountType === "Arbetsgivare") && !(ad.author as any).companyPageApproved) {
+    return (
+      <div className="container" style={{ padding: "4rem 1rem", textAlign: "center" }}>
+        <div className="glass-panel" style={{ padding: "4rem 2rem", maxWidth: "600px", margin: "0 auto" }}>
+          <h1 style={{ color: "var(--color-primary)", marginBottom: "1rem" }}>Annonsen är inte tillgänglig</h1>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "1.1rem", lineHeight: 1.6 }}>
+            Denna annons tillhör ett företag vars konto för närvarande är inaktivt eller väntar på godkännande.
+          </p>
+          <div style={{ marginTop: "2rem" }}>
+            <Link href="/" className="btn-primary" style={{ padding: "0.8rem 1.5rem", borderRadius: "100px" }}>Tillbaka till startsidan</Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const isOwner = session?.user?.email && session.user.email === ad.author.email;

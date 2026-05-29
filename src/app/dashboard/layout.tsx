@@ -29,6 +29,7 @@ export default async function DashboardLayout({
                 <Link href="/dashboard/jobb" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Dina Jobb</Link>
                 <Link href="/dashboard/ansokningar" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Ansökningar</Link>
                 <Link href="/dashboard/installningar" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Företagssida (Inställningar)</Link>
+                <Link href={`/butik/${(session.user as any)?.id}`} target="_blank" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Visa Publik Sida ↗</Link>
               </nav>
             ) : (
               <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -36,6 +37,9 @@ export default async function DashboardLayout({
                 <Link href="/dashboard/favoriter" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Favoriter</Link>
                 <Link href="/dashboard/flodet" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Flödet</Link>
                 <Link href="/dashboard/installningar" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Inställningar</Link>
+                {(session.user as any)?.accountType === "Företag" && (
+                  <Link href={`/butik/${(session.user as any)?.id}`} target="_blank" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Visa Publik Sida ↗</Link>
+                )}
               </nav>
             )}
           </div>
@@ -52,6 +56,7 @@ export default async function DashboardLayout({
                   <Link href="/dashboard/jobb" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>Dina Jobb</Link>
                   <Link href="/dashboard/ansokningar" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>Ansökningar</Link>
                   <Link href="/dashboard/installningar" style={{ display: 'block', padding: '1rem 0', color: 'var(--color-primary)', fontWeight: 600 }}>Företagssida (Inställningar)</Link>
+                  <Link href={`/butik/${(session.user as any)?.id}`} target="_blank" style={{ display: 'block', padding: '1rem 0', color: 'var(--color-primary)', fontWeight: 600 }}>Visa Publik Sida ↗</Link>
                 </nav>
               ) : (
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '0', marginTop: '0.5rem', borderTop: '1px solid var(--color-border)' }}>
@@ -59,6 +64,9 @@ export default async function DashboardLayout({
                   <Link href="/dashboard/favoriter" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>Favoriter</Link>
                   <Link href="/dashboard/flodet" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>Flödet</Link>
                   <Link href="/dashboard/installningar" style={{ display: 'block', padding: '1rem 0', color: 'var(--color-primary)', fontWeight: 600 }}>Inställningar</Link>
+                  {(session.user as any)?.accountType === "Företag" && (
+                    <Link href={`/butik/${(session.user as any)?.id}`} target="_blank" style={{ display: 'block', padding: '1rem 0', color: 'var(--color-primary)', fontWeight: 600 }}>Visa Publik Sida ↗</Link>
+                  )}
                 </nav>
               )}
             </details>

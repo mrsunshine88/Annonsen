@@ -8,11 +8,32 @@ const prisma = new PrismaClient();
 export default async function JobAdPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const job = await prisma.jobAd.findUnique({
-    where: { id: resolvedParams.id }
+    where: { id: resolvedParams.id },
+    include: {
+      author: {
+        select: { accountType: true, companyPageApproved: true }
+      }
+    }
   });
 
   if (!job) {
     notFound();
+  }
+
+  if ((job.author.accountType === "Företag" || job.author.accountType === "Arbetsgivare") && !(job.author as any).companyPageApproved) {
+    return (
+      <div className="container" style={{ padding: "4rem 1rem", textAlign: "center" }}>
+        <div className="glass-panel" style={{ padding: "4rem 2rem", maxWidth: "600px", margin: "0 auto" }}>
+          <h1 style={{ color: "var(--color-primary)", marginBottom: "1rem" }}>Jobbannonsen är inte tillgänglig</h1>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "1.1rem", lineHeight: 1.6 }}>
+            Denna jobbannons tillhör en arbetsgivare vars konto för närvarande är inaktivt eller väntar på godkännande.
+          </p>
+          <div style={{ marginTop: "2rem" }}>
+            <Link href="/jobb" className="btn-primary" style={{ padding: "0.8rem 1.5rem", borderRadius: "100px" }}>Tillbaka till jobben</Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const daysLeft = Math.ceil((new Date(job.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
