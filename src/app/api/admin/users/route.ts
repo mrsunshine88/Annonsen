@@ -25,6 +25,8 @@ export async function GET() {
         createdAt: true,
         accountType: true,
         companyName: true,
+        companyPageApproved: true,
+        canPublishAds: true,
         customCompanyAdPrice: true,
         customCompanySubscriptionPrice: true,
         _count: {
@@ -60,6 +62,8 @@ export async function PUT(req: Request) {
     let dataToUpdate = {};
     if (action === "toggleBlock") dataToUpdate = { isBlocked: value };
     else if (action === "toggleAdmin") dataToUpdate = { isAdmin: value };
+    else if (action === "toggleCompanyPage") dataToUpdate = { companyPageApproved: value };
+    else if (action === "togglePublishAds") dataToUpdate = { canPublishAds: value };
     else return NextResponse.json({ error: "Ogiltig åtgärd" }, { status: 400 });
 
     const updatedUser = await prisma.user.update({

@@ -19,6 +19,13 @@ export async function POST(req: Request) {
   }
 
   try {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user) return NextResponse.json({ error: "Användare hittades inte" }, { status: 404 });
+
+    if (!user.canPublishAds) {
+      return NextResponse.json({ error: "Ditt konto väntar på godkännande för att publicera annonser." }, { status: 403 });
+    }
+
     const body = await req.json();
     const { 
       title, industry, location, scope, duration, description, 

@@ -90,6 +90,15 @@ export default function AdminUsersPage() {
                   <strong>{user.name || "Inget namn"}</strong>
                   <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>{user.email}</div>
                   {user.isAdmin && <span style={{ fontSize: "0.75rem", background: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", marginTop: "0.25rem", display: "inline-block" }}>Admin</span>}
+                  
+                  {(user.accountType === "Företag" || user.accountType === "Arbetsgivare") && (
+                    <div style={{ marginTop: "0.5rem", fontSize: "0.8rem", background: "var(--color-bg-subtle)", padding: "0.5rem", borderRadius: "var(--radius-sm)" }}>
+                      <strong>Konto:</strong> <span style={{ color: "var(--color-primary)" }}>{user.accountType}</span><br />
+                      <strong>Företag:</strong> {user.companyName || "-"}<br />
+                      <strong>Företagssida:</strong> {user.companyPageApproved ? <span style={{color: 'var(--color-success)', fontWeight: 'bold'}}>Godkänd</span> : <span style={{color: 'var(--color-error)', fontWeight: 'bold'}}>Väntar</span>}<br />
+                      <strong>Annonsering:</strong> {user.canPublishAds ? <span style={{color: 'var(--color-success)', fontWeight: 'bold'}}>Godkänd</span> : <span style={{color: 'var(--color-error)', fontWeight: 'bold'}}>Väntar</span>}
+                    </div>
+                  )}
                 </td>
                 <td style={{ padding: "1rem" }}>{user._count.ads}</td>
                 <td style={{ padding: "1rem" }}>{new Date(user.createdAt).toLocaleDateString("sv-SE")}</td>
@@ -100,7 +109,7 @@ export default function AdminUsersPage() {
                     <span style={{ color: "var(--color-success)" }}>Aktiv</span>
                   )}
                 </td>
-                <td style={{ padding: "1rem", textAlign: "right", display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                <td style={{ padding: "1rem", textAlign: "right", display: "flex", gap: "0.5rem", justifyContent: "flex-end", flexWrap: "wrap", minWidth: "300px" }}>
                   {user.isRoot || user.email === 'apersson508@gmail.com' ? (
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", fontStyle: "italic", padding: "0.4rem 0.8rem", display: "inline-block", background: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)" }}>
                       Root-konto (Skyddat)
@@ -121,6 +130,26 @@ export default function AdminUsersPage() {
                       >
                         {user.isAdmin ? "Ta bort Admin" : "Gör till Admin"}
                       </button>
+
+                      {(user.accountType === "Företag" || user.accountType === "Arbetsgivare") && (
+                        <>
+                          <button 
+                            onClick={() => toggleStatus(user.id, "toggleCompanyPage", !user.companyPageApproved)}
+                            className="btn-secondary"
+                            style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}
+                          >
+                            {user.companyPageApproved ? "Dölj Företagssida" : "Godkänn Företagssida"}
+                          </button>
+                          <button 
+                            onClick={() => toggleStatus(user.id, "togglePublishAds", !user.canPublishAds)}
+                            className="btn-secondary"
+                            style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}
+                          >
+                            {user.canPublishAds ? "Stoppa Annonsering" : "Godkänn Annonsering"}
+                          </button>
+                        </>
+                      )}
+
                       <button 
                         onClick={() => deleteUser(user.id)}
                         className="btn-primary"

@@ -21,8 +21,24 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
     }
   });
 
-  if (!user || user.accountType !== "Företag") {
+  if (!user || (user.accountType !== "Företag" && user.accountType !== "Arbetsgivare")) {
     notFound();
+  }
+
+  if (!user.companyPageApproved) {
+    return (
+      <div className="container" style={{ padding: "4rem 1rem", textAlign: "center" }}>
+        <div className="glass-panel" style={{ padding: "4rem 2rem", maxWidth: "600px", margin: "0 auto" }}>
+          <h1 style={{ color: "var(--color-primary)", marginBottom: "1rem" }}>Under granskning</h1>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: "1.1rem", lineHeight: 1.6 }}>
+            Den här företagssidan väntar på godkännande från en administratör och är ännu inte synlig för allmänheten.
+          </p>
+          <div style={{ marginTop: "2rem" }}>
+            <Link href="/" className="btn-primary" style={{ padding: "0.8rem 1.5rem", borderRadius: "100px" }}>Tillbaka till startsidan</Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

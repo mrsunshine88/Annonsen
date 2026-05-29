@@ -23,6 +23,8 @@ model User {
 
   // Företagsfält
   accountType        String    @default("Privat") // "Privat" eller "Företag"
+  companyPageApproved Boolean  @default(false)
+  canPublishAds      Boolean   @default(false)
   companyName        String?
   companyOrgNr       String?
   companyAddress     String?

@@ -26,6 +26,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Användare hittades inte" }, { status: 404 });
     }
 
+    if (user.accountType === "Arbetsgivare") {
+      return NextResponse.json({ error: "Arbetsgivare kan inte skapa vanliga annonser, endast jobbannonser." }, { status: 403 });
+    }
+
+    if (user.accountType === "Företag" && !user.canPublishAds) {
+      return NextResponse.json({ error: "Ditt konto väntar på godkännande för annonsering." }, { status: 403 });
+    }
+
     // Kolla betalningsinställningar
     const settings = await prisma.settings.findUnique({ where: { id: "default" } });
     const category = await prisma.category.findUnique({ where: { id: categoryId } });

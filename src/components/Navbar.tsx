@@ -57,6 +57,7 @@ export default function Navbar() {
   const closeMenu = () => setMobileMenuOpen(false);
 
   const isCompany = (session?.user as any)?.accountType === "Företag";
+  const isEmployer = (session?.user as any)?.accountType === "Arbetsgivare";
 
   return (
     <header className="navbar-header">
@@ -99,18 +100,30 @@ export default function Navbar() {
           ) : (
             <Link href="/login" className="btn-navbar-secondary">Logga in</Link>
           )}
-          <Link href="/skapa" className="btn-navbar-primary">
-            {isCompany ? "Företagsannons" : "Skapa annons"}
-          </Link>
+          {isEmployer ? (
+            <Link href="/skapa-jobb" className="btn-navbar-primary">
+              Skapa Jobb
+            </Link>
+          ) : (
+            <Link href="/skapa" className="btn-navbar-primary">
+              {isCompany ? "Företagsannons" : "Skapa annons"}
+            </Link>
+          )}
         </nav>
       </div>
 
       {/* Mobilmeny (Rullgardin) */}
       {mobileMenuOpen && (
         <div className="mobile-menu">
-          <Link href="/skapa" className="mobile-dropdown-item" onClick={closeMenu}>
-            {isCompany ? "Företagsannons" : "Skapa annons"}
-          </Link>
+          {isEmployer ? (
+            <Link href="/skapa-jobb" className="mobile-dropdown-item" onClick={closeMenu}>
+              Skapa Jobb
+            </Link>
+          ) : (
+            <Link href="/skapa" className="mobile-dropdown-item" onClick={closeMenu}>
+              {isCompany ? "Företagsannons" : "Skapa annons"}
+            </Link>
+          )}
           
           {deferredPrompt && (
             <button onClick={() => { closeMenu(); handleInstall(); }} className="mobile-dropdown-item" style={{ textAlign: "left", width: "100%", display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
