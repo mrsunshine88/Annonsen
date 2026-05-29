@@ -61,14 +61,9 @@ export default function Navbar() {
   return (
     <header className="navbar-header">
       <div className="container navbar-container">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link href="/" className="navbar-logo" onClick={closeMenu}>
-            Annonsen
-          </Link>
-          <div className="navbar-desktop" style={{ display: 'flex', alignItems: 'center' }}>
-            <Link href="/jobb" className="dashboard-link">JOBB</Link>
-          </div>
-        </div>
+        <Link href="/" className="navbar-logo" onClick={closeMenu}>
+          Annonsen
+        </Link>
 
         {/* Hamburgermeny-knapp för mobil */}
         <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Meny">
@@ -83,6 +78,7 @@ export default function Navbar() {
 
         {/* Skrivbordsmeny */}
         <nav className="navbar-desktop">
+          <Link href="/jobb" className="dashboard-link">JOBB</Link>
           {status === "loading" ? null : session ? (
             <>
               <Link href="/dashboard/annonser" className="dashboard-link">Mina sidor</Link>
