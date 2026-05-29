@@ -165,13 +165,13 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
             <h3 style={{ marginBottom: "1rem", fontSize: "1.1rem" }}>Bifoga filer</h3>
             
             <div style={{ marginBottom: "1.5rem" }}>
-              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>CV (PDF/Word) *</label>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>CV (PDF/Word/Text) *</label>
               {cvUrl ? (
                 <div style={{ color: "var(--color-success)", fontWeight: 500 }}>✓ Fil uppladdad</div>
               ) : (
                 <input 
                   type="file" 
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.doc,.docx,.txt,.rtf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                   onChange={e => handleUpload(e, setCvUrl)} 
                   required 
                 />
@@ -179,13 +179,13 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Personligt Brev (PDF/Word) *</label>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Personligt Brev (PDF/Word/Text) *</label>
               {coverLetterUrl ? (
                 <div style={{ color: "var(--color-success)", fontWeight: 500 }}>✓ Fil uppladdad</div>
               ) : (
                 <input 
                   type="file" 
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.doc,.docx,.txt,.rtf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                   onChange={e => handleUpload(e, setCoverLetterUrl)} 
                   required 
                 />

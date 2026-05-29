@@ -17,6 +17,9 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
         include: {
           category: true
         }
+      },
+      jobAds: {
+        orderBy: { createdAt: "desc" }
       }
     }
   });
@@ -111,6 +114,30 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Jobbannonser (om de finns) */}
+      {user.jobAds && user.jobAds.length > 0 && (
+        <div style={{ marginTop: "4rem" }}>
+          <h2 style={{ marginBottom: "1.5rem" }}>Lediga jobb hos {user.companyName} ({user.jobAds.length})</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
+            {user.jobAds.map(job => (
+              <Link key={job.id} href={`/jobb/${job.id}`} className="glass-panel hover-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}>
+                <div style={{ height: '150px', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center' }}>
+                  <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', marginBottom: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>JOBB</span>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{job.title}</h3>
+                </div>
+                <div style={{ padding: '1rem' }}>
+                  <div style={{ color: 'var(--color-text)', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.95rem' }}>{job.scope} • {job.duration}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>📍 {job.location}</span>
+                    <span>{new Date(job.createdAt).toLocaleDateString("sv-SE")}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
