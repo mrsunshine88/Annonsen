@@ -28,7 +28,7 @@ All data definieras i `prisma/schema.prisma`. Relationen är byggd med `onDelete
 - **JobAd & JobApplication:** En separat tabellstruktur från vanliga annonser för att hålla domänerna rena. `JobAd` innehåller fält som `requirements`, `merits`, `scope`, `deadline`. `JobApplication` sparar CV/Personligt brev-URL:er och kopplar sökanden till jobbannonsen.
 - **Message:** Inbyggd chatt. Varje meddelande har `senderId` och `receiverId`. För att koppla chatten till en specifik kontext finns två *valfria* fält: `adId` (för varuannonser) och `jobAdId` (för platsannonser). Ett boolean-fält `isJobMessage` används för UI-märkning.
 - **Settings:** En singleton-modell (id = "default") som håller systeminställningar. Används för prissättning, Swish-inställningar (`swishAlias`, `swishCert`) och aktivering av betalningar.
-- **Favorite, Follow, AdReport:** Modeller för att bokmärka annonser, följa företag/säljare och anmäla opassande annonser till admin.
+- **Favorite, Follow, AdReport:** Modeller för att bokmärka annonser, följa företag/säljare och anmäla opassande annonser till admin. `AdReport` har bland annat ett fält `adminViewed` för att hålla koll på om en notis ska visas för administratörerna.
 
 ---
 
@@ -58,6 +58,13 @@ När en användare loggar in sker en initial omdirigering i `app/page.tsx` och v
 - Layouten i `src/app/dashboard/layout.tsx` anpassar menyn till vänster beroende på `accountType`, så att Arbetsgivare t.ex. inte ser "Dina Annonser" (varor) utan enbart "Dina Jobb". 
 - Företag och Arbetsgivare har en intern länk till "Din Företagssida" (`/dashboard/foretagssida`) där de kan förhandsgranska exakt hur deras butik/profil ser ut för omvärlden utan att lämna systemet. Inga externa fönster (`target="_blank"`) öppnas, allt renderas integrerat.
 
+### 4.5 Admin Notifikationer
+Ett smart notissystem är implementerat för att snabbt uppmärksamma administratörer på nya anmälningar (`AdReport`):
+- När en användare skapar en anmälan sparas den med `adminViewed = false`.
+- En lättviktig polling var 10:e sekund via `/api/auth/status` (inbyggd i `Navbar`) räknar ut antalet olästa anmälningar och renderar dynamiskt en röd notisbubbla intill "Admin" i huvudmenyn.
+- Inne i admin-layouten används den frikopplade klientkomponenten `AdminSidebar.tsx` som lyssnar på samma status och visar bubblan intill "Anmälningar".
+- **UX (User Experience):** Så fort administratören klickar på "Anmälningar" och besöker sidan, anropas en bakgrundsroute (`POST /api/admin/anmalningar/mark-viewed`) som sätter `adminViewed = true` på alla aktuella anmälningar. Detta gör att notisbubblorna försvinner omedelbart överallt utan att admin behöver markera varje anmälan som "Hanterad" individuellt.
+
 ---
 
 ## 5. Kärnfunktioner & Flöden
@@ -73,10 +80,10 @@ En helt isolerad portal byggd sida-vid-sida med varuannonserna:
 - **Arbetsgivare (`/dashboard/jobb/...`):** Här skapas annonsen. Arbetsgivaren kan se alla inkomna ansökningar i en tabell och ladda ner dokumenten. När de vill gå vidare klickar de "Kontakta i chatt" varpå de skickas till den interna meddelandecentralen. De kan även radera och hantera sina annonser härifrån.
 
 ### 5.3 Meddelandesystem (Chatt)
-Chatten (`/dashboard/meddelanden`) använder sig av polling och WebSockets:
+Chatten (`/dashboard/meddelanden`) bygger på en kombination av realtidsuppdateringar och HTTP-anrop för notiser:
 - **Arkitektur:** När ett meddelande skickas via `POST /api/messages` sparas det i databasen. UI:t sorterar in meddelandena i en `Map` baserat på konversation (kombination av `annons-ID` och `motpartens ID`). 
-- **Notiser:** I `Navbar` ligger en lättviktig polling var 10:e sekund mot `/api/auth/status` som räknar `unreadCount` och visar en liten notis-bubbla om man fått nya svar.
-- **Realtid:** Vid tillgång till Supabase används `@supabase/supabase-js` för att lyssna på `INSERT`-events i tabellen `Message`. När ett nytt meddelande anländer laddas chatten om direkt.
+- **Notiser:** I `Navbar` ligger en lättviktig polling var 10:e sekund mot `/api/auth/status` som räknar `unreadCount` och visar en liten notis-bubbla i huvudmenyn om man fått nya svar.
+- **Realtid (Supabase):** Inne på själva meddelandesidan är all "ful-polling" borttagen för att spara på klientens CPU och serverns resurser. Istället används `@supabase/supabase-js` och WebSockets för att enbart lyssna på `INSERT`-events i tabellen `Message`. När ett nytt meddelande anländer renderas det direkt.
 - **Jobb-integration:** Jobbansökningar triggar automatiskt ett första chattmeddelande (som markerats med `isJobMessage`). Detta visas i chatten med en tydlig "JOBB"-tagg, så företag inte blandar ihop jobbansökningar med frågor om en begagnad soffa.
 
 ### 5.4 Inställningar och Swish (Betalning)
@@ -114,7 +121,16 @@ Vi undvek Tailwind (på beställning) och byggde en ren, egen design med Vanilla
 
 ---
 
-## 8. Framtida Utveckling / Att Tänka På
+## 8. Prestanda & Optimeringar
+Ett stort fokus har lagts på att optimera applikationens svarstider och datahantering för att den ska kännas blixtsnabb:
+
+- **Databas-indexering (Prisma):** För att undvika "Full Table Scans" (där databasen läser igenom *varje* rad för att hitta en träff), är flertalet sökindex (`@@index`) konfigurerade. Exempelvis indexeras frekvent sökta fält som `categoryId`, `location`, `price`, `authorId` och `createdAt`.
+- **API Paginering:** Istället för att ladda ner hela databasen på en gång, bygger Sök-API:et (`/api/search`) på Prisma's `take` och `skip`. API:et returnerar strikt 20 annonser åt gången. I frontend används en "Ladda fler"-knapp som mjukt bygger på listan. Detta sänker minnesanvändningen drastiskt på mobila enheter.
+- **Bildoptimering (Next.js Image):** Istället för traditionella, tunga `<img>`-taggar används rakt igenom ramverkets inbyggda `<Image>`-komponent från `next/image`. Detta säkerställer att extremt stora uppladdade bilder per automatik skalas ner och konverteras till webbanpassade format (som `WebP`) med optimala upplösningar (`sizes`) och lazy-loading innan de skickas till klientens webbläsare.
+
+---
+
+## 9. Framtida Utveckling / Att Tänka På
 - **Swish Integration:** Backend-rutterna för prishantering finns klara. För nästa steg behövs Swish e-handels-certifikat, vilka läggs in i `Settings`. En webhook (`/api/payments/webhook`) bör byggas för att asynkront ta emot "Betald"-bekräftelsen från Swish och ändra `isPaid` till `true`.
 - **Bildhantering:** Just nu emuleras filuppladdning i `/api/upload`. För produktionsmiljö behöver ni koppla denna route till en AWS S3-bucket, Supabase Storage eller Cloudinary för att hantera bilder och CV-filer.
 - **Email:** Det finns inga e-postutskick för återställning av lösenord. Integration mot t.ex. Resend eller SendGrid rekommenderas.

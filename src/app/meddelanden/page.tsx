@@ -4,13 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
+import { Suspense } from "react";
 
 // Initiera Supabase-klient (endast på klientsidan)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
-export default function MessagesPage() {
+function MessagesContent() {
   const searchParams = useSearchParams();
   const preselectAdId = searchParams.get("adId");
   const isNewChat = searchParams.get("newChat") === "true";
@@ -82,6 +83,7 @@ export default function MessagesPage() {
           }
         )
         .subscribe();
+    }
     return () => {
       if (channel) supabase?.removeChannel(channel);
     };
@@ -168,7 +170,12 @@ export default function MessagesPage() {
         fetchMessages();
       }
     } catch (error) {
-      console.error(erro    <div className="container" style={{ padding: "2rem 0" }}>
+      console.error(error);
+    }
+  };
+
+  return (
+    <div className="container" style={{ padding: "2rem 0" }}>
       <div className="meddelanden-wrapper" style={{ display: "flex", gap: "2rem", height: "75vh" }}>
         {/* Vänsterspalt: Konversationer */}
         <aside className="glass-panel meddelanden-sidebar" style={{ width: "300px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -267,5 +274,13 @@ export default function MessagesPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: "4rem", textAlign: "center" }}>Laddar meddelanden...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
