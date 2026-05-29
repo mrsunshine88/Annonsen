@@ -45,6 +45,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               Företag
             </Link>
+            <Link 
+              href="/admin/arbetsgivare" 
+              className="dashboard-link"
+              style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
+            >
+              Arbetsgivare
+            </Link>
           </nav>
         </div>
       </aside>

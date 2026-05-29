@@ -38,9 +38,23 @@ model User {
   customCompanyAdPrice           Int?
   customCompanySubscriptionPrice Int?
 
+  // Unika arbetsgivarpriser
+  customEmployerAdPrice           Int?
+  customEmployerSubscriptionPrice Int?
+
   ads              Ad[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+  
+  // Jobb-relationer
+  jobAds           JobAd[]
+  jobApplications  JobApplication[]
+  
+  // Nya relationer
+  favorites        Favorite[]
+  following        Follow[]  @relation("Follower")
+  followers        Follow[]  @relation("Followed")
+  reportsSubmitted AdReport[]
 }
 
 model Category {
@@ -91,11 +105,15 @@ model Ad {
   category   Category @relation(fields: [categoryId], references: [id])
 
   messages Message[]
+  favorites Favorite[]
+  reports  AdReport[]
 }
 
 model Message {
   id        String   @id @default(cuid())
   content   String
+  isRead    Boolean  @default(false)
+  isJobMessage Boolean @default(false)
   createdAt DateTime @default(now())
 
   senderId String
@@ -104,8 +122,11 @@ model Message {
   receiverId String
   receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  adId String
-  ad   Ad     @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId String?
+  ad   Ad?     @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  jobAdId String?
+  jobAd   JobAd?  @relation(fields: [jobAdId], references: [id], onDelete: Cascade)
 }
 
 model Settings {
@@ -122,4 +143,94 @@ model Settings {
   // Företagspriser
   companyAdPrice           Int @default(0) // Pris per annons för företag
   companySubscriptionPrice Int @default(0) // Månadskostnad för företagssida
+
+  // Arbetsgivarpriser
+  employerAdPrice           Int @default(0) // Pris per platsannons för arbetsgivare
+  employerSubscriptionPrice Int @default(0) // Månadskostnad för arbetsgivare
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adId      String
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, adId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  follower    User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followedId  String
+  followed    User     @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followedId])
+}
+
+model AdReport {
+  id        String   @id @default(cuid())
+  reason    String
+  status    String   @default("Ny") // "Ny", "Hanterad"
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  adId      String
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JobAd {
+  id              String   @id @default(cuid())
+  title           String   // Jobbtitel
+  companyName     String   // Vem som anställer
+  industry        String   // Bransch
+  
+  location        String   // Plats eller "Distans"
+  scope           String   // Heltid, deltid, extrajobb, projekt
+  duration        String   // Tillsvidare, vikariat osv.
+  
+  description     String   // Fritext
+  requirements    String   // Ska-krav
+  merits          String?  // Meriterande
+  
+  deadline        DateTime // Sista ansökningsdag
+  applyUrl        String?  // Om ansökan sker externt
+  contactPerson   String?  // Namn
+  contactEmail    String?  // E-post
+  
+  isPaid          Boolean  @default(true)
+  paymentId       String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  applications    JobApplication[]
+  messages        Message[]
+}
+
+model JobApplication {
+  id              String   @id @default(cuid())
+  
+  name            String
+  email           String
+  phone           String?
+  message         String?
+  
+  cvUrl           String
+  coverLetterUrl  String
+
+  createdAt       DateTime @default(now())
+
+  jobId           String
+  job             JobAd    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  applicantId     String
+  applicant       User     @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 }

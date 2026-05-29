@@ -8,6 +8,7 @@ export default function CreateAdForm({ categories, autoLocation = true, defaultL
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isBumping, setIsBumping] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   
   const isEditing = !!initialData;
 
@@ -416,10 +417,63 @@ export default function CreateAdForm({ categories, autoLocation = true, defaultL
             </p>
           </div>
         )}
-        <button type="submit" disabled={loading} className="btn-primary" style={{ width: "100%", padding: "1rem", fontSize: "1.1rem" }}>
-          {loading ? "Sparar..." : (isEditing ? "Spara Ändringar" : "Publicera Annons")}
-        </button>
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <button type="button" onClick={() => setShowPreview(true)} className="btn-secondary" style={{ flex: 1, padding: "1rem", fontSize: "1.1rem" }}>
+            Förhandsgranska
+          </button>
+          <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 1, padding: "1rem", fontSize: "1.1rem" }}>
+            {loading ? "Sparar..." : (isEditing ? "Spara Ändringar" : "Publicera Annons")}
+          </button>
+        </div>
       </div>
+
+      {showPreview && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem', overflowY: 'auto' }}>
+          <div className="glass-panel" style={{ backgroundColor: 'white', maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', position: 'relative', borderRadius: 'var(--radius-lg)' }}>
+            <button type="button" onClick={() => setShowPreview(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'var(--color-bg-subtle)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
+            
+            <div style={{ padding: '2rem' }}>
+              <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>{title || "Din annons rubrik"}</h2>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>{price ? `${price} kr` : "Pris ej angivet"}</div>
+              
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                <span className="search-pill" style={{ padding: '0.5rem 1rem', borderRadius: '50px', background: 'var(--color-bg-subtle)' }}>📍 {location || "Län"}, {city || "Ort"}</span>
+                <span className="search-pill" style={{ padding: '0.5rem 1rem', borderRadius: '50px', background: 'var(--color-bg-subtle)' }}>📅 {new Date().toLocaleDateString()}</span>
+                {brand && <span className="search-pill" style={{ padding: '0.5rem 1rem', borderRadius: '50px', background: 'var(--color-bg-subtle)' }}>🏷️ {brand}</span>}
+              </div>
+
+              {files.length > 0 && (
+                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', marginBottom: '2rem' }}>
+                  {files.map((file, i) => (
+                    <img key={i} src={URL.createObjectURL(file)} alt="Preview" style={{ height: '200px', objectFit: 'cover', borderRadius: 'var(--radius-md)' }} />
+                  ))}
+                </div>
+              )}
+
+              <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', marginBottom: '2rem' }}>
+                {description || "Din beskrivning kommer att visas här."}
+              </div>
+
+              {isCar && (
+                <div style={{ background: 'var(--color-bg-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
+                  <h3 style={{ marginBottom: '1rem' }}>Fordonsspecifikationer</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    {model && <div><strong>Modell:</strong> {model}</div>}
+                    {year && <div><strong>Årsmodell:</strong> {year}</div>}
+                    {mileage && <div><strong>Miltal:</strong> {mileage}</div>}
+                    {gearbox && <div><strong>Växellåda:</strong> {gearbox}</div>}
+                    {fuel && <div><strong>Drivmedel:</strong> {fuel}</div>}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ textAlign: 'right' }}>
+                <button type="button" onClick={() => setShowPreview(false)} className="btn-secondary">Stäng förhandsgranskning</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

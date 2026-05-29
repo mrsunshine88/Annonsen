@@ -99,6 +99,14 @@ export default function AdminAdsPage() {
                 <td style={{ padding: "1rem" }}>{new Date(ad.createdAt).toLocaleDateString("sv-SE")}</td>
                 <td style={{ padding: "1rem", textAlign: "right", display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
                   <Link 
+                    href={`/annons/${ad.id}`}
+                    target="_blank"
+                    className="btn-secondary"
+                    style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem", textDecoration: "none" }}
+                  >
+                    Visa
+                  </Link>
+                  <Link 
                     href={`/admin/annonser/${ad.id}`}
                     className="btn-secondary"
                     style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem", textDecoration: "none" }}

@@ -8,7 +8,7 @@ import BackButton from "@/components/BackButton";
 export default function RegisterPage() {
   const router = useRouter();
   
-  const [accountType, setAccountType] = useState<"Privat" | "Företag">("Privat");
+  const [accountType, setAccountType] = useState<"Privat" | "Företag" | "Arbetsgivare">("Privat");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
@@ -71,12 +71,12 @@ export default function RegisterPage() {
       <div className="glass-panel" style={{ padding: "2rem", marginTop: "1rem" }}>
         <h1 style={{ fontSize: "1.8rem", textAlign: "center", marginBottom: "1.5rem" }}>Skapa konto</h1>
         
-        {/* Toggle Privat / Företag */}
+        {/* Toggle Privat / Företag / Arbetsgivare */}
         <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
           <button 
             type="button"
             className={accountType === "Privat" ? "btn-primary" : "btn-secondary"}
-            style={{ flex: 1 }}
+            style={{ flex: 1, padding: "0.5rem" }}
             onClick={() => setAccountType("Privat")}
           >
             Privatperson
@@ -84,10 +84,18 @@ export default function RegisterPage() {
           <button 
             type="button"
             className={accountType === "Företag" ? "btn-primary" : "btn-secondary"}
-            style={{ flex: 1 }}
+            style={{ flex: 1, padding: "0.5rem" }}
             onClick={() => setAccountType("Företag")}
           >
             Företag
+          </button>
+          <button 
+            type="button"
+            className={accountType === "Arbetsgivare" ? "btn-primary" : "btn-secondary"}
+            style={{ flex: 1, padding: "0.5rem" }}
+            onClick={() => setAccountType("Arbetsgivare")}
+          >
+            Arbetsgivare
           </button>
         </div>
 
@@ -139,9 +147,9 @@ export default function RegisterPage() {
             />
           </div>
 
-          {accountType === "Företag" && (
+          {(accountType === "Företag" || accountType === "Arbetsgivare") && (
             <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--color-border)" }}>
-              <h3 style={{ marginBottom: "1rem" }}>Företagsuppgifter</h3>
+              <h3 style={{ marginBottom: "1rem" }}>{accountType === "Företag" ? "Företagsuppgifter" : "Arbetsgivaruppgifter"}</h3>
               
               <div className="grid-2-col" style={{ marginBottom: "1.2rem" }}>
                 <div>
@@ -152,7 +160,7 @@ export default function RegisterPage() {
                     onChange={e => setCompanyName(e.target.value)}
                     className="input-field" 
                     placeholder="Bilfirma AB" 
-                    required={accountType === "Företag"} 
+                    required={accountType === "Företag" || accountType === "Arbetsgivare"} 
                   />
                 </div>
                 <div>
@@ -163,7 +171,7 @@ export default function RegisterPage() {
                     onChange={e => setCompanyOrgNr(e.target.value)}
                     className="input-field" 
                     placeholder="556XXX-XXXX" 
-                    required={accountType === "Företag"} 
+                    required={accountType === "Företag" || accountType === "Arbetsgivare"} 
                   />
                 </div>
               </div>
@@ -176,7 +184,7 @@ export default function RegisterPage() {
                   onChange={e => setCompanyAddress(e.target.value)}
                   className="input-field" 
                   placeholder="Storgatan 1" 
-                  required={accountType === "Företag"} 
+                  required={accountType === "Företag" || accountType === "Arbetsgivare"} 
                 />
               </div>
 
@@ -189,7 +197,7 @@ export default function RegisterPage() {
                     onChange={e => setCompanyZipCode(e.target.value)}
                     className="input-field" 
                     placeholder="123 45" 
-                    required={accountType === "Företag"} 
+                    required={accountType === "Företag" || accountType === "Arbetsgivare"} 
                   />
                 </div>
                 <div>
@@ -200,7 +208,7 @@ export default function RegisterPage() {
                     onChange={e => setCompanyCity(e.target.value)}
                     className="input-field" 
                     placeholder="Stockholm" 
-                    required={accountType === "Företag"} 
+                    required={accountType === "Företag" || accountType === "Arbetsgivare"} 
                   />
                 </div>
               </div>

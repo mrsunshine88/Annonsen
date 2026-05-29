@@ -40,6 +40,8 @@ export async function PUT(req: Request) {
         bumpPrice: data.bumpPrice,
         companyAdPrice: data.companyAdPrice !== undefined ? data.companyAdPrice : undefined,
         companySubscriptionPrice: data.companySubscriptionPrice !== undefined ? data.companySubscriptionPrice : undefined,
+        employerAdPrice: data.employerAdPrice !== undefined ? data.employerAdPrice : undefined,
+        employerSubscriptionPrice: data.employerSubscriptionPrice !== undefined ? data.employerSubscriptionPrice : undefined,
       },
       create: {
         id: "default",
@@ -53,6 +55,8 @@ export async function PUT(req: Request) {
         bumpPrice: data.bumpPrice ?? 0,
         companyAdPrice: data.companyAdPrice ?? 0,
         companySubscriptionPrice: data.companySubscriptionPrice ?? 0,
+        employerAdPrice: data.employerAdPrice ?? 0,
+        employerSubscriptionPrice: data.employerSubscriptionPrice ?? 0,
       }
     });
     return NextResponse.json(updated);

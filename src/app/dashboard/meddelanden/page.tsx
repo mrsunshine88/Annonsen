@@ -101,16 +101,23 @@ export default function MessagesPage() {
   if (loading) return <p>Laddar meddelanden...</p>;
   if (!currentUser) return <p>Du måste vara inloggad.</p>;
 
-  const conversationsMap = new Map<string, { ad: any, otherUser: any, messages: any[], lastUpdated: Date }>();
+  const conversationsMap = new Map<string, { ad: any, isJob: boolean, otherUser: any, messages: any[], lastUpdated: Date }>();
 
   messages.forEach(msg => {
     const isSender = msg.senderId === currentUser;
     const otherUser = isSender ? msg.receiver : msg.sender;
-    const key = `${msg.adId}_${otherUser.id}`;
+    const isJob = msg.isJobMessage;
+    const adObj = isJob ? msg.jobAd : msg.ad;
+    
+    // Om annonsen har raderats kan adObj vara null
+    if (!adObj) return;
+
+    const key = `${isJob ? 'job_' : 'ad_'}${adObj.id}_${otherUser.id}`;
 
     if (!conversationsMap.has(key)) {
       conversationsMap.set(key, {
-        ad: msg.ad,
+        ad: adObj,
+        isJob,
         otherUser: otherUser,
         messages: [],
         lastUpdated: new Date(msg.createdAt)
@@ -149,7 +156,9 @@ export default function MessagesPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          adId: activeChatData.ad.id,
+          adId: activeChatData.isJob ? null : activeChatData.ad.id,
+          jobAdId: activeChatData.isJob ? activeChatData.ad.id : null,
+          isJobMessage: activeChatData.isJob,
           receiverId: activeChatData.otherUser.id,
           content: replyContent
         })
@@ -191,7 +200,8 @@ export default function MessagesPage() {
                   transition: "all 0.2s"
                 }}
               >
-                <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.25rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.25rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  {conv.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: "bold" }}>JOBB</span>}
                   {conv.ad.title}
                 </div>
                 <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", display: "flex", justifyContent: "space-between" }}>
@@ -211,8 +221,13 @@ export default function MessagesPage() {
             {/* Header */}
             <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h3 style={{ margin: "0 0 0.25rem 0" }}>{activeChatData.otherUser.name || "Anonym"}</h3>
-                <div style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)" }}>Gällande: <Link href={`/annons/${activeChatData.ad.id}`} style={{ color: "var(--color-primary)" }}>{activeChatData.ad.title}</Link></div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <h3 style={{ margin: "0 0 0.25rem 0" }}>{activeChatData.otherUser.name || "Anonym"}</h3>
+                  {activeChatData.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", fontWeight: "bold" }}>JOBB</span>}
+                </div>
+                <div style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)" }}>
+                  Gällande: <Link href={activeChatData.isJob ? `/jobb/${activeChatData.ad.id}` : `/annons/${activeChatData.ad.id}`} style={{ color: "var(--color-primary)" }}>{activeChatData.ad.title}</Link>
+                </div>
               </div>
             </div>
 

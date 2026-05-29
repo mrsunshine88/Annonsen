@@ -27,7 +27,8 @@ export async function GET() {
       include: {
         sender: { select: { id: true, name: true } },
         receiver: { select: { id: true, name: true } },
-        ad: { select: { id: true, title: true } }
+        ad: { select: { id: true, title: true } },
+        jobAd: { select: { id: true, title: true } }
       }
     });
 
@@ -45,9 +46,9 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { adId, receiverId, content } = await req.json();
+    const { adId, jobAdId, receiverId, content, isJobMessage } = await req.json();
 
-    if (!adId || !receiverId || !content) {
+    if ((!adId && !jobAdId) || !receiverId || !content) {
       return NextResponse.json({ error: "Saknar fält" }, { status: 400 });
     }
 
@@ -60,12 +61,15 @@ export async function POST(req: Request) {
         content,
         senderId: session.user.id,
         receiverId,
-        adId
+        adId: adId || null,
+        jobAdId: jobAdId || null,
+        isJobMessage: isJobMessage || false
       },
       include: {
         sender: { select: { id: true, name: true } },
         receiver: { select: { id: true, name: true } },
-        ad: { select: { id: true, title: true } }
+        ad: { select: { id: true, title: true } },
+        jobAd: { select: { id: true, title: true } }
       }
     });
 

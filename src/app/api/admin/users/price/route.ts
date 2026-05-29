@@ -13,7 +13,7 @@ export async function PUT(req: Request) {
 
   try {
     const data = await req.json();
-    const { userId, customCompanyAdPrice, customCompanySubscriptionPrice } = data;
+    const { userId, customCompanyAdPrice, customCompanySubscriptionPrice, customEmployerAdPrice, customEmployerSubscriptionPrice } = data;
 
     if (!userId) {
       return NextResponse.json({ error: "Saknar användar-ID" }, { status: 400 });
@@ -22,8 +22,10 @@ export async function PUT(req: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        customCompanyAdPrice: customCompanyAdPrice === null ? null : Number(customCompanyAdPrice),
-        customCompanySubscriptionPrice: customCompanySubscriptionPrice === null ? null : Number(customCompanySubscriptionPrice),
+        ...(customCompanyAdPrice !== undefined ? { customCompanyAdPrice: customCompanyAdPrice === null ? null : Number(customCompanyAdPrice) } : {}),
+        ...(customCompanySubscriptionPrice !== undefined ? { customCompanySubscriptionPrice: customCompanySubscriptionPrice === null ? null : Number(customCompanySubscriptionPrice) } : {}),
+        ...(customEmployerAdPrice !== undefined ? { customEmployerAdPrice: customEmployerAdPrice === null ? null : Number(customEmployerAdPrice) } : {}),
+        ...(customEmployerSubscriptionPrice !== undefined ? { customEmployerSubscriptionPrice: customEmployerSubscriptionPrice === null ? null : Number(customEmployerSubscriptionPrice) } : {}),
       }
     });
 

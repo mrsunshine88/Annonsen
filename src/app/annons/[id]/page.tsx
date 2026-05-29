@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ContactSellerForm from "./ContactSellerForm";
 import BackButton from "@/components/BackButton";
+import AdActions from "./AdActions";
 
 const prisma = new PrismaClient();
 
@@ -27,6 +28,22 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
   const isOwner = session?.user?.email && (session.user as any).id === ad.authorId;
   const isCompany = ad.author.accountType === "Företag";
+  const loggedInUserId = (session?.user as any)?.id;
+
+  let initialIsFavorite = false;
+  let initialIsFollowing = false;
+  
+  if (loggedInUserId) {
+    const fav = await prisma.favorite.findUnique({ 
+      where: { userId_adId: { userId: loggedInUserId, adId: ad.id } } 
+    });
+    if (fav) initialIsFavorite = true;
+    
+    const fol = await prisma.follow.findUnique({ 
+      where: { followerId_followedId: { followerId: loggedInUserId, followedId: ad.author.id } } 
+    });
+    if (fol) initialIsFollowing = true;
+  }
 
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem" }}>
@@ -49,7 +66,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
             <h1 style={{ marginBottom: "0.5rem", color: "var(--color-primary)" }}>{ad.title}</h1>
             <div style={{ display: "flex", gap: "1rem", color: "var(--color-text-secondary)", marginBottom: "2rem", fontSize: "0.9rem" }}>
               <span>📍 {ad.location || "Okänd plats"}</span>
-              <span>📅 {new Date(ad.createdAt).toLocaleDateString("sv-SE")}</span>
+              <span>📅 {new Date(ad.createdAt).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })}</span>
               <span>🏷️ {ad.category.name}</span>
             </div>
 
@@ -149,6 +166,15 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 </div>
               </div>
             )}
+            
+            <AdActions 
+              adId={ad.id} 
+              authorId={ad.author.id} 
+              authorName={ad.author.companyName || ad.author.name || "Anonym säljare"} 
+              initialIsFavorite={initialIsFavorite} 
+              initialIsFollowing={initialIsFollowing} 
+              isLoggedIn={!!loggedInUserId} 
+            />
           </div>
 
         </div>

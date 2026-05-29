@@ -45,14 +45,14 @@ export async function POST(req: Request) {
         password: hashedPassword,
         name: name || null,
         accountType: accountType || "Privat",
-        companyName: accountType === "Företag" ? companyName : null,
-        companyOrgNr: accountType === "Företag" ? companyOrgNr : null,
-        companyAddress: accountType === "Företag" ? companyAddress : null,
-        companyZipCode: accountType === "Företag" ? companyZipCode : null,
-        companyCity: accountType === "Företag" ? companyCity : null,
-        companyWebsite: accountType === "Företag" ? companyWebsite : null,
-        companyOpeningHours: accountType === "Företag" ? companyOpeningHours : null,
-        companyDescription: accountType === "Företag" ? companyDescription : null,
+        companyName: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyName : null,
+        companyOrgNr: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyOrgNr : null,
+        companyAddress: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyAddress : null,
+        companyZipCode: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyZipCode : null,
+        companyCity: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyCity : null,
+        companyWebsite: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyWebsite : null,
+        companyOpeningHours: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyOpeningHours : null,
+        companyDescription: (accountType === "Företag" || accountType === "Arbetsgivare") ? companyDescription : null,
       }
     });
 

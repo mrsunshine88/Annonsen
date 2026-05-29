@@ -30,7 +30,7 @@ export default async function Home() {
         </p>
         
         {/* Search Bar */}
-        <form action="/sok" method="GET" style={{ display: 'flex', gap: '0.5rem', maxWidth: '700px', margin: '0 auto' }}>
+        <form action="/sok" method="GET" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', maxWidth: '700px', margin: '0 auto', justifyContent: 'center' }}>
           <input 
             type="text" 
             name="q"
@@ -39,8 +39,11 @@ export default async function Home() {
             style={{ padding: '1rem', fontSize: '1.1rem' }}
           />
           <button type="submit" className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-            Sök exakt
+            Sök
           </button>
+          <Link href="/sok" className="btn-secondary" style={{ padding: '1rem 2rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>
+            Ta mig till annonserna
+          </Link>
         </form>
       </section>
 

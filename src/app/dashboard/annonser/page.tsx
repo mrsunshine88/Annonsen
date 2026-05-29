@@ -35,13 +35,25 @@ export default async function MyAdsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {ads.map(ad => (
-            <div key={ad.id} style={{ padding: '1.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between' }}>
-              <div>
-                <h3 style={{ marginBottom: '0.5rem' }}>{ad.title}</h3>
-                <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{ad.price} kr</p>
+            <div key={ad.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ width: '80px', height: '80px', flexShrink: 0, borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: 'var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {ad.imageUrls && ad.imageUrls.length > 0 ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Ingen bild</span>
+                  )}
+                </div>
+                <div>
+                  <h3 style={{ marginBottom: '0.2rem' }}>{ad.title}</h3>
+                  <p style={{ color: 'var(--color-primary)', fontWeight: 600, marginBottom: '0.5rem' }}>{ad.price} kr</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Upplagd: {new Date(ad.createdAt).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })}</p>
+                </div>
               </div>
-              <div>
-                <Link href={`/dashboard/annonser/${ad.id}`} className="btn-secondary" style={{ marginRight: '0.5rem', display: 'inline-block' }}>Redigera</Link>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <Link href={`/annons/${ad.id}`} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Visa Annons</Link>
+                <Link href={`/dashboard/annonser/${ad.id}`} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Uppdatera & Bumpa</Link>
                 <DeleteAdButton adId={ad.id} />
               </div>
             </div>

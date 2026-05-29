@@ -36,19 +36,20 @@ export const authOptions: any = {
         }
 
         // Auto-admin för din mail
-        if (user.email === "apersson508@gmail.com" && !user.isAdmin) {
+        if (user.email === "apersson508@gmail.com" && (!user.isAdmin || !user.isRoot)) {
           await prisma.user.update({
             where: { email: user.email },
-            data: { isAdmin: true }
+            data: { isAdmin: true, isRoot: true }
           });
           user.isAdmin = true;
+          user.isRoot = true;
         }
 
-        return { 
           id: user.id, 
           email: user.email, 
           name: user.name, 
           isAdmin: user.isAdmin,
+          isRoot: user.isRoot,
           accountType: user.accountType,
           companyName: user.companyName,
           companyLogoUrl: user.companyLogoUrl
@@ -61,6 +62,7 @@ export const authOptions: any = {
       if (user) {
         token.id = user.id;
         token.isAdmin = (user as any).isAdmin;
+        token.isRoot = (user as any).isRoot;
         token.accountType = (user as any).accountType;
         token.companyName = (user as any).companyName;
         token.companyLogoUrl = (user as any).companyLogoUrl;
@@ -74,6 +76,7 @@ export const authOptions: any = {
       if (session.user) {
         session.user.id = token.id as string;
         (session.user as any).isAdmin = token.isAdmin as boolean;
+        (session.user as any).isRoot = token.isRoot as boolean;
         (session.user as any).accountType = token.accountType as string;
         (session.user as any).companyName = token.companyName as string;
         (session.user as any).companyLogoUrl = token.companyLogoUrl as string;
