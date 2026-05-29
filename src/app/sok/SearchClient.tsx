@@ -271,9 +271,26 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
 
               <div>
                 <label style={{ fontSize: "0.9rem", fontWeight: 600, display: "block", marginBottom: "0.5rem" }}>Län / Plats</label>
-                <div style={{ maxHeight: "150px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0.5rem", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md) var(--radius-md) 0 0", backgroundColor: "var(--color-bg-surface)" }}>
+                <div style={{ maxHeight: "220px", overflowY: "auto", display: "flex", flexWrap: "wrap", gap: "0.5rem", padding: "0.5rem", border: "1px solid rgba(226, 232, 240, 0.5)", borderRadius: "var(--radius-lg)", backgroundColor: "color-mix(in srgb, var(--color-bg-subtle) 50%, transparent)" }}>
                   {["Blekinge", "Dalarna", "Gotland", "Gävleborg", "Halland", "Jämtland", "Jönköping", "Kalmar", "Kronoberg", "Norrbotten", "Skåne", "Stockholm", "Södermanland", "Uppsala", "Värmland", "Västerbotten", "Västernorrland", "Västmanland", "Västra Götaland", "Örebro", "Östergötland"].map(loc => (
-                    <label key={loc} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
+                    <label 
+                      key={loc} 
+                      style={{ 
+                        display: "inline-flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        padding: "0.4rem 0.8rem", 
+                        fontSize: "0.85rem", 
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        backgroundColor: locations.includes(loc) ? "var(--color-primary)" : "var(--color-bg-surface)",
+                        color: locations.includes(loc) ? "#ffffff" : "var(--color-text-secondary)",
+                        border: `1px solid ${locations.includes(loc) ? "var(--color-primary)" : "rgba(226, 232, 240, 0.8)"}`,
+                        borderRadius: "100px",
+                        transition: "all var(--transition-fast)",
+                        boxShadow: locations.includes(loc) ? "0 4px 10px rgba(59, 130, 246, 0.3)" : "0 2px 4px rgba(0,0,0,0.02)"
+                      }}
+                    >
                       <input 
                         type="checkbox" 
                         checked={locations.includes(loc)}
@@ -281,6 +298,7 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                           if (e.target.checked) setLocations([...locations, loc]);
                           else setLocations(locations.filter(l => l !== loc));
                         }}
+                        style={{ display: "none" }}
                       />
                       {loc}
                     </label>
@@ -291,9 +309,9 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                     type="button" 
                     onClick={() => setLocations([])} 
                     className="btn-secondary" 
-                    style={{ flex: 1, padding: "0.25rem", fontSize: "0.8rem", borderRadius: "0 0 0 var(--radius-md)" }}
+                    style={{ flex: 1, padding: "0.5rem", fontSize: "0.85rem", borderRadius: "100px", backgroundColor: "var(--color-bg-surface)" }}
                   >
-                    Hela Sverige
+                    Rensa val
                   </button>
                   <button 
                     type="button" 
@@ -342,33 +360,53 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                       }
                     }} 
                     className="btn-secondary" 
-                    style={{ flex: 1, padding: "0.25rem", fontSize: "0.8rem", borderRadius: "0 0 var(--radius-md) 0" }}
+                    style={{ flex: 1, padding: "0.5rem", fontSize: "0.85rem", borderRadius: "100px", backgroundColor: "var(--color-bg-surface)" }}
                   >
                     + Angränsande
                   </button>
                 </div>
                 
                 {availableCities.length > 0 && (
-                  <div style={{ marginTop: "1rem", maxHeight: "150px", overflowY: "auto", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", padding: "0.5rem" }}>
-                    <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>Filtrera på ort</div>
-                    {availableCities.map(city => (
-                      <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", marginBottom: "0.25rem", cursor: "pointer" }}>
-                        <input 
-                          type="checkbox" 
-                          checked={selectedCities.includes(city)}
-                          onChange={(e) => {
-                            let newCities;
-                            if (e.target.checked) {
-                              newCities = [...selectedCities, city];
-                            } else {
-                              newCities = selectedCities.filter(c => c !== city);
-                            }
-                            setSelectedCities(newCities);
+                  <div style={{ marginTop: "1.5rem", padding: "1rem", border: "1px solid rgba(226, 232, 240, 0.5)", borderRadius: "var(--radius-lg)", backgroundColor: "color-mix(in srgb, var(--color-bg-subtle) 50%, transparent)" }}>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.75rem", color: "var(--color-text-primary)" }}>Filtrera på ort</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", maxHeight: "150px", overflowY: "auto" }}>
+                      {availableCities.map(city => (
+                        <label 
+                          key={city} 
+                          style={{ 
+                            display: "inline-flex", 
+                            alignItems: "center", 
+                            justifyContent: "center",
+                            padding: "0.3rem 0.7rem", 
+                            fontSize: "0.8rem", 
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            backgroundColor: selectedCities.includes(city) ? "var(--color-primary)" : "var(--color-bg-surface)",
+                            color: selectedCities.includes(city) ? "#ffffff" : "var(--color-text-secondary)",
+                            border: `1px solid ${selectedCities.includes(city) ? "var(--color-primary)" : "rgba(226, 232, 240, 0.8)"}`,
+                            borderRadius: "100px",
+                            transition: "all var(--transition-fast)",
+                            boxShadow: selectedCities.includes(city) ? "0 4px 10px rgba(59, 130, 246, 0.3)" : "0 2px 4px rgba(0,0,0,0.02)"
                           }}
-                        />
-                        {city}
-                      </label>
-                    ))}
+                        >
+                          <input 
+                            type="checkbox" 
+                            checked={selectedCities.includes(city)}
+                            onChange={(e) => {
+                              let newCities;
+                              if (e.target.checked) {
+                                newCities = [...selectedCities, city];
+                              } else {
+                                newCities = selectedCities.filter(c => c !== city);
+                              }
+                              setSelectedCities(newCities);
+                            }}
+                            style={{ display: "none" }}
+                          />
+                          {city}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -437,7 +475,7 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
             </>
           )}
 
-          <button type="submit" className="btn-primary" style={{ marginTop: "1rem" }}>Använd Filter</button>
+          <button type="submit" className="btn-primary" style={{ marginTop: "1rem", borderRadius: "100px", width: "100%" }}>Använd Filter</button>
         </form>
       </aside>
 

@@ -20,35 +20,35 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link 
               href="/admin/konton" 
               className="dashboard-link"
-              style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
+              style={{ display: 'block', margin: '0.2rem 0' }}
             >
               Hantera Konton
             </Link>
             <Link 
               href="/admin/annonser" 
               className="dashboard-link"
-              style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
+              style={{ display: 'block', margin: '0.2rem 0' }}
             >
               Hantera Annonser
             </Link>
             <Link 
               href="/admin/kostnad" 
               className="dashboard-link"
-              style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
+              style={{ display: 'block', margin: '0.2rem 0' }}
             >
               Privatperson
             </Link>
             <Link 
               href="/admin/foretag" 
               className="dashboard-link"
-              style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
+              style={{ display: 'block', margin: '0.2rem 0' }}
             >
               Företag
             </Link>
             <Link 
               href="/admin/arbetsgivare" 
               className="dashboard-link"
-              style={{ padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', display: 'block' }}
+              style={{ display: 'block', margin: '0.2rem 0' }}
             >
               Arbetsgivare
             </Link>
