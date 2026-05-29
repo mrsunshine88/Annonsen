@@ -136,6 +136,7 @@ export default function MessagesPage() {
     const seller = newChatAdData.author;
     conversationsMap.set(`new_${preselectAdId}`, {
       ad: newChatAdData,
+      isJob: false,
       otherUser: { ...seller, name: seller.accountType === "Företag" ? seller.companyName : seller.name },
       messages: [],
       lastUpdated: new Date()

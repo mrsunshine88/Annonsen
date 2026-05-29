@@ -3,10 +3,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   try {
     const job = await prisma.jobAd.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       select: { title: true, companyName: true, applyUrl: true, authorId: true }
     });
 

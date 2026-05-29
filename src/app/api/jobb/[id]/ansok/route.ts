@@ -5,7 +5,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const session: any = await getServerSession(authOptions);
   
   try {
@@ -13,7 +14,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const { name, email, phone, message, cvUrl, coverLetterUrl } = body;
 
     const job = await prisma.jobAd.findUnique({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     if (!job) {

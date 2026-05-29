@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import BackButton from "@/components/BackButton";
 
-export default function ApplyJobPage({ params }: { params: { id: string } }) {
+export default function ApplyJobPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const { data: session } = useSession();
   const router = useRouter();
   
@@ -25,7 +26,7 @@ export default function ApplyJobPage({ params }: { params: { id: string } }) {
     // Fetch job title and company name
     const fetchJob = async () => {
       try {
-        const res = await fetch(`/api/jobb/${params.id}`);
+        const res = await fetch(`/api/jobb/${resolvedParams.id}`);
         const data = await res.json();
         if (res.ok && data) {
           setJobTitle(data.title);
@@ -38,7 +39,7 @@ export default function ApplyJobPage({ params }: { params: { id: string } }) {
       }
     };
     fetchJob();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   useEffect(() => {
     if (session?.user) {
@@ -83,7 +84,7 @@ export default function ApplyJobPage({ params }: { params: { id: string } }) {
     
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/jobb/${params.id}/ansok`, {
+      const res = await fetch(`/api/jobb/${resolvedParams.id}/ansok`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,7 +99,7 @@ export default function ApplyJobPage({ params }: { params: { id: string } }) {
       
       if (res.ok) {
         alert("Din ansökan har skickats!");
-        router.push(`/jobb/${params.id}?applied=true`);
+        router.push(`/jobb/${resolvedParams.id}?applied=true`);
       } else {
         const data = await res.json();
         alert(data.error || "Ett fel uppstod när ansökan skulle skickas.");

@@ -5,9 +5,10 @@ import BackButton from "@/components/BackButton";
 
 const prisma = new PrismaClient();
 
-export default async function JobAdPage({ params }: { params: { id: string } }) {
+export default async function JobAdPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const job = await prisma.jobAd.findUnique({
-    where: { id: params.id }
+    where: { id: resolvedParams.id }
   });
 
   if (!job) {
