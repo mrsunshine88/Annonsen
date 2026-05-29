@@ -78,7 +78,7 @@ export default function Navbar() {
 
         {/* Skrivbordsmeny */}
         <nav className="navbar-desktop">
-          <Link href="/jobb" className="dashboard-link">JOBB</Link>
+          <Link href="/jobb" className="dashboard-link">Jobb</Link>
           {status === "loading" ? null : session ? (
             <>
               <Link href="/dashboard/annonser" className="dashboard-link">Mina sidor</Link>
@@ -118,6 +118,8 @@ export default function Navbar() {
               Installera App
             </button>
           )}
+
+          <Link href="/jobb" className="mobile-dropdown-item" onClick={closeMenu}>Jobb</Link>
 
           {status === "loading" ? null : session ? (
             <>
