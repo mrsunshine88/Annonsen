@@ -496,10 +496,10 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                 key={ad.id} 
                 className="glass-panel search-result-card" 
                 onClick={() => router.push(`/annons/${ad.id}`)}
-                style={{ padding: "1.5rem", display: "flex", gap: "1.5rem", alignItems: "center", cursor: "pointer", flexWrap: "wrap" }}
+                style={{ padding: "1.5rem", display: "flex", gap: "1.5rem", cursor: "pointer" }}
               >
                 {/* Bild */}
-                <div style={{ width: "120px", height: "120px", flexShrink: 0, backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div className="search-result-image" style={{ width: "120px", height: "120px", flexShrink: 0, backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {ad.imageUrls && ad.imageUrls.length > 0 ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -508,25 +508,26 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                   )}
                 </div>
 
-                {/* Info */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                    <h3 style={{ margin: 0, color: "var(--color-primary)" }}>{ad.title}</h3>
+                {/* Info & Pris */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                    <h3 style={{ margin: 0, color: "var(--color-primary)", lineHeight: 1.2 }}>{ad.title}</h3>
                     {ad.advertiserType === "Företag" && (
-                      <span style={{ fontSize: "0.7rem", fontWeight: 600, backgroundColor: "var(--color-primary)", color: "white", padding: "2px 6px", borderRadius: "4px" }}>Företag</span>
+                      <span style={{ fontSize: "0.7rem", fontWeight: 600, backgroundColor: "var(--color-primary)", color: "white", padding: "2px 6px", borderRadius: "4px", flexShrink: 0 }}>Företag</span>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: "1rem", color: "var(--color-text-secondary)", fontSize: "0.9rem", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: "1rem", color: "var(--color-text-secondary)", fontSize: "0.9rem", flexWrap: "wrap", marginBottom: "1rem" }}>
                     <span>{ad.location || "Okänd plats"}</span>
                     <span>{new Date(ad.createdAt).toLocaleDateString("sv-SE")}</span>
                     {ad.brand && <span>{ad.brand} {ad.model || ""}</span>}
                     {ad.year && <span>{ad.year}</span>}
                     {ad.mileage && <span>{ad.mileage} mil</span>}
                   </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "1.25rem", fontWeight: 700 }}>{ad.price} kr</div>
-                  <button onClick={() => router.push(`/annons/${ad.id}`)} className="btn-secondary" style={{ padding: "0.5rem 1rem", marginTop: "0.5rem" }}>Läs mer</button>
+                  
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700 }}>{ad.price} kr</div>
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/annons/${ad.id}`); }} className="btn-secondary" style={{ padding: "0.4rem 1rem", fontSize: "0.9rem" }}>Läs mer</button>
+                  </div>
                 </div>
               </div>
             ))}
