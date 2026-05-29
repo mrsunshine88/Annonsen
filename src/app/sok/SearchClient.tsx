@@ -524,9 +524,9 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                     {ad.mileage && <span>{ad.mileage} mil</span>}
                   </div>
                   
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700 }}>{ad.price} kr</div>
-                    <button onClick={(e) => { e.stopPropagation(); router.push(`/annons/${ad.id}`); }} className="btn-secondary" style={{ padding: "0.4rem 1rem", fontSize: "0.9rem" }}>Läs mer</button>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", gap: "0.5rem" }}>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, whiteSpace: "nowrap" }}>{ad.price} kr</div>
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/annons/${ad.id}`); }} className="btn-secondary" style={{ padding: "0.4rem 1rem", fontSize: "0.9rem", whiteSpace: "nowrap" }}>Läs mer</button>
                   </div>
                 </div>
               </div>
