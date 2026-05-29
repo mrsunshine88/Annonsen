@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import DeleteJobButton from "./DeleteJobButton";
 
 export const dynamic = 'force-dynamic';
 const prisma = new PrismaClient();
@@ -69,10 +70,14 @@ export default async function DashboardJobbPage() {
                     </div>
                   </div>
                   
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <Link href={`/jobb/${job.id}`} target="_blank" className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <Link href={`/jobb/${job.id}`} className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}>
                       Visa live
                     </Link>
+                    <button onClick={() => {}} className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }} title="Redigera-funktion kommer snart">
+                      Redigera
+                    </button>
+                    <DeleteJobButton jobId={job.id} />
                   </div>
                 </div>
 

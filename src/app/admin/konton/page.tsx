@@ -136,14 +136,26 @@ export default function AdminUsersPage() {
                           <button 
                             onClick={() => toggleStatus(user.id, "toggleCompanyPage", !user.companyPageApproved)}
                             className="btn-secondary"
-                            style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}
+                            style={{ 
+                              padding: "0.4rem 0.8rem", 
+                              fontSize: "0.85rem",
+                              backgroundColor: user.companyPageApproved ? "var(--color-success)" : "transparent",
+                              color: user.companyPageApproved ? "white" : "var(--color-text)",
+                              borderColor: user.companyPageApproved ? "var(--color-success)" : "var(--color-border)"
+                            }}
                           >
                             {user.companyPageApproved ? "Dölj Företagssida" : "Godkänn Företagssida"}
                           </button>
                           <button 
                             onClick={() => toggleStatus(user.id, "togglePublishAds", !user.canPublishAds)}
                             className="btn-secondary"
-                            style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}
+                            style={{ 
+                              padding: "0.4rem 0.8rem", 
+                              fontSize: "0.85rem",
+                              backgroundColor: user.canPublishAds ? "var(--color-success)" : "transparent",
+                              color: user.canPublishAds ? "white" : "var(--color-text)",
+                              borderColor: user.canPublishAds ? "var(--color-success)" : "var(--color-border)"
+                            }}
                           >
                             {user.canPublishAds ? "Stoppa Annonsering" : "Godkänn Annonsering"}
                           </button>

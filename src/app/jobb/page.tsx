@@ -1,12 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
-export default async function JobPortalPage({ searchParams }: { searchParams: { q?: string; location?: string; industry?: string } }) {
-  const query = searchParams.q || "";
-  const location = searchParams.location || "";
-  const industry = searchParams.industry || "";
+export default async function JobPortalPage({ searchParams }: { searchParams: Promise<{ q?: string; location?: string; industry?: string }> }) {
+  const resolvedParams = await searchParams;
+  const query = resolvedParams.q || "";
+  const location = resolvedParams.location || "";
+  const industry = resolvedParams.industry || "";
 
   const whereClause: any = {
     author: {
