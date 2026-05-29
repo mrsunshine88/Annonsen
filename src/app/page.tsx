@@ -14,37 +14,54 @@ export default async function Home() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
       {/* Hero Section */}
       <section 
-        className="glass-panel animate-fade-in" 
         style={{ 
-          padding: '4rem 2rem', 
+          position: "relative",
+          padding: '5rem 2rem', 
           textAlign: 'center',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%)',
-          border: '1px solid var(--color-border)'
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden'
         }}
       >
-        <h1 style={{ fontSize: '3rem', marginBottom: '1rem', color: 'var(--color-primary)' }}>
-          Hitta det du söker, exakt.
-        </h1>
-        <p style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
-          Slipp bruset. Sök på det du vill ha och få bara upp exakta träffar. Välkommen till en renare marknadsplats.
-        </p>
-        
-        {/* Search Bar */}
-        <form action="/sok" method="GET" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', maxWidth: '700px', margin: '0 auto', justifyContent: 'center' }}>
-          <input 
-            type="text" 
-            name="q"
-            placeholder="Vad letar du efter? (ex. soffa, cykel)" 
-            className="input-field"
-            style={{ padding: '1rem', fontSize: '1.1rem' }}
-          />
-          <button type="submit" className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-            Sök
-          </button>
-          <Link href="/sok" className="btn-secondary" style={{ padding: '1rem 2rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>
-            Ta mig till annonserna
-          </Link>
-        </form>
+        <div style={{ position: "absolute", top: "-50%", left: "-20%", width: "100%", height: "200%", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 50%)", pointerEvents: "none" }}></div>
+        <div style={{ position: "relative", zIndex: 10 }}>
+          <h1 style={{ fontSize: '4rem', marginBottom: '1.25rem', color: '#ffffff', fontWeight: 800, letterSpacing: '-0.04em' }}>
+            Hitta det du söker, <span style={{ color: "var(--color-primary)" }}>exakt.</span>
+          </h1>
+          <p style={{ fontSize: '1.35rem', color: '#94a3b8', marginBottom: '2.5rem', maxWidth: '650px', margin: '0 auto 3rem auto', fontWeight: 400, lineHeight: 1.6 }}>
+            Slipp bruset. Sök på det du vill ha och få bara upp exakta träffar. Välkommen till en renare marknadsplats.
+          </p>
+          
+          {/* Search Bar */}
+          <form action="/sok" method="GET" style={{ 
+              display: 'flex', 
+              gap: '0.75rem', 
+              flexWrap: 'wrap', 
+              maxWidth: '750px', 
+              margin: '0 auto', 
+              justifyContent: 'center',
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(16px)',
+              padding: '0.75rem',
+              borderRadius: '1rem',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+            <input 
+              type="text" 
+              name="q"
+              placeholder="Vad letar du efter? (ex. soffa, cykel)" 
+              className="input-field"
+              style={{ padding: '1.25rem', fontSize: '1.15rem', flex: '1 1 300px', border: 'none', borderRadius: '0.5rem', background: '#ffffff' }}
+            />
+            <button type="submit" className="btn-primary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.15rem', borderRadius: '0.5rem' }}>
+              Sök
+            </button>
+            <Link href="/sok" className="btn-secondary" style={{ padding: '1.25rem 2.5rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', borderRadius: '0.5rem' }}>
+              Ta mig till annonserna
+            </Link>
+          </form>
+        </div>
       </section>
 
       <InstallAppBox />

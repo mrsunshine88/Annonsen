@@ -29,9 +29,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "4rem auto" }}>
-      <div className="glass-panel" style={{ padding: "2rem" }}>
-        <h1 style={{ fontSize: "1.8rem", textAlign: "center", marginBottom: "1.5rem" }}>Logga in</h1>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)', width: '100vw', height: '80vh', background: 'radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 70%)', zIndex: -1, pointerEvents: 'none' }}></div>
+      <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '3rem 2.5rem', boxShadow: 'var(--shadow-lg)' }}>
+        <h1 style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2rem", color: "var(--color-primary)", fontWeight: 800 }}>Logga in</h1>
         
         {error && (
           <div style={{ padding: "0.75rem", backgroundColor: "rgba(239, 68, 68, 0.1)", color: "var(--color-error)", borderRadius: "var(--radius-md)", marginBottom: "1rem", textAlign: "center" }}>

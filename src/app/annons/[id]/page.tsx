@@ -17,7 +17,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const ad = await prisma.ad.findUnique({
     where: { id: resolvedParams.id },
     include: {
-      author: { select: { id: true, name: true, createdAt: true, accountType: true, companyName: true, companyOrgNr: true, companyAddress: true, companyCity: true, companyWebsite: true, companyLogoUrl: true, companyDescription: true, companyOpeningHours: true } },
+      author: { select: { id: true, email: true, name: true, createdAt: true, accountType: true, companyName: true, companyOrgNr: true, companyAddress: true, companyCity: true, companyWebsite: true, companyLogoUrl: true, companyDescription: true, companyOpeningHours: true } },
       category: { select: { name: true } }
     }
   });
@@ -26,7 +26,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
     notFound();
   }
 
-  const isOwner = session?.user?.email && (session.user as any).id === ad.authorId;
+  const isOwner = session?.user?.email && session.user.email === ad.author.email;
   const isCompany = ad.author.accountType === "Företag";
   const loggedInUserId = (session?.user as any)?.id;
 
