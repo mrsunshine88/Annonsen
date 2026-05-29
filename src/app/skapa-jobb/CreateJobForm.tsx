@@ -3,26 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CreateJobForm({ settings }: { settings: any }) {
+export default function CreateJobForm({ settings, initialData, isEdit = false }: { settings: any, initialData?: any, isEdit?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    title: "",
-    industry: "",
-    location: "",
-    scope: "Heltid",
-    duration: "Tillsvidare",
-    description: "",
-    requirements: "",
-    merits: "",
-    deadline: "",
-    applyUrl: "",
-    contactPerson: "",
-    contactEmail: "",
-    contactPhone: "",
-    hideContactPhone: false
+    title: initialData?.title || "",
+    industry: initialData?.industry || "",
+    location: initialData?.location || "",
+    scope: initialData?.scope || "Heltid",
+    duration: initialData?.duration || "Tillsvidare",
+    description: initialData?.description || "",
+    requirements: initialData?.requirements || "",
+    merits: initialData?.merits || "",
+    deadline: initialData?.deadline ? new Date(initialData.deadline).toISOString().split('T')[0] : "",
+    applyUrl: initialData?.applyUrl || "",
+    contactPerson: initialData?.contactPerson || "",
+    contactEmail: initialData?.contactEmail || "",
+    contactPhone: initialData?.contactPhone || "",
+    hideContactPhone: initialData?.hideContactPhone || false
   });
 
   const handleChange = (e: any) => {
@@ -35,16 +35,20 @@ export default function CreateJobForm({ settings }: { settings: any }) {
     setError("");
 
     try {
-      const res = await fetch("/api/jobb", {
-        method: "POST",
+      const url = "/api/jobb";
+      const method = isEdit ? "PUT" : "POST";
+      const bodyPayload = isEdit ? { ...formData, id: initialData.id } : formData;
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(bodyPayload)
       });
 
       const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.error || "Gick inte att publicera jobbannonsen");
+        throw new Error(data.error || (isEdit ? "Gick inte att uppdatera jobbannonsen" : "Gick inte att publicera jobbannonsen"));
       }
 
       router.push(`/jobb/${data.id}`);
@@ -164,8 +168,8 @@ export default function CreateJobForm({ settings }: { settings: any }) {
         </p>
       </div>
 
-      <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: "1rem", padding: "1rem", fontSize: "1.1rem" }}>
-        {loading ? "Publicerar..." : "Publicera Jobbannons"}
+      <button type="submit" disabled={loading} className="btn-primary" style={{ padding: "1rem", fontSize: "1.1rem" }}>
+        {loading ? "Sparar..." : (isEdit ? "Spara ändringar" : "Publicera Jobbannons")}
       </button>
     </form>
   );

@@ -86,7 +86,7 @@ export default function Navbar() {
           <Link href="/jobb" className="dashboard-link">Jobb</Link>
           {status === "loading" ? null : session ? (
             <>
-              <Link href="/dashboard/annonser" className="dashboard-link">Mina sidor</Link>
+              <Link href={isEmployer ? "/dashboard/jobb" : "/dashboard/annonser"} className="dashboard-link">Mina sidor</Link>
               <Link href="/meddelanden" className="dashboard-link" style={{ position: 'relative' }}>
                 Meddelanden
                 {unreadCount > 0 && (
@@ -147,7 +147,7 @@ export default function Navbar() {
 
           {status === "loading" ? null : session ? (
             <>
-              <Link href="/dashboard/annonser" className="mobile-dropdown-item" onClick={closeMenu}>Mina sidor</Link>
+              <Link href={isEmployer ? "/dashboard/jobb" : "/dashboard/annonser"} className="mobile-dropdown-item" onClick={closeMenu}>Mina sidor</Link>
               <Link href="/meddelanden" className="mobile-dropdown-item" onClick={closeMenu} style={{ display: 'flex', justifyContent: 'space-between' }}>
                 Meddelanden
                 {unreadCount > 0 && (

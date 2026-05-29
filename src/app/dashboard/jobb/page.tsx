@@ -74,9 +74,9 @@ export default async function DashboardJobbPage() {
                     <Link href={`/jobb/${job.id}`} className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}>
                       Visa live
                     </Link>
-                    <button className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem", cursor: "not-allowed", opacity: 0.7 }} title="Redigera-funktion kommer snart" disabled>
+                    <Link href={`/dashboard/jobb/${job.id}`} className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}>
                       Redigera
-                    </button>
+                    </Link>
                     <DeleteJobButton jobId={job.id} />
                   </div>
                 </div>

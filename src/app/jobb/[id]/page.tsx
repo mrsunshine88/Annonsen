@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
+import FollowButton from "@/components/FollowButton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const prisma = new PrismaClient();
 
@@ -18,6 +21,16 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
 
   if (!job) {
     notFound();
+  }
+
+  const session: any = await getServerSession(authOptions);
+  let initialIsFollowing = false;
+
+  if (session?.user?.id) {
+    const fol = await prisma.follow.findUnique({ 
+      where: { followerId_followedId: { followerId: session.user.id, followedId: job.authorId } } 
+    });
+    if (fol) initialIsFollowing = true;
   }
 
   if ((job.author.accountType === "Företag" || job.author.accountType === "Arbetsgivare") && !(job.author as any).companyPageApproved) {
@@ -47,7 +60,21 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
         {/* Header */}
         <div style={{ borderBottom: "1px solid var(--color-border)", paddingBottom: "1.5rem", marginBottom: "2rem" }}>
           <h1 style={{ fontSize: "2.2rem", color: "var(--color-primary)", marginBottom: "0.5rem" }}>{job.title}</h1>
-          <div style={{ fontSize: "1.2rem", fontWeight: 600, marginBottom: "1rem" }}>{job.companyName}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+            <Link href={`/butik/${job.authorId}`} style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-text)", textDecoration: "none" }} className="hover-underline">
+              {job.companyName}
+            </Link>
+            {job.authorId !== session?.user?.id && (
+              <div style={{ width: "200px" }}>
+                <FollowButton 
+                  authorId={job.authorId} 
+                  authorName={job.companyName} 
+                  initialIsFollowing={initialIsFollowing} 
+                  isLoggedIn={!!session?.user?.id} 
+                />
+              </div>
+            )}
+          </div>
           
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>📍 {job.location}</span>

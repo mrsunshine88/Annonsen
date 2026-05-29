@@ -59,3 +59,58 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Gick inte att skapa jobbannonsen" }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  const session: any = await getServerSession(authOptions);
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Du måste vara inloggad" }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+    const { 
+      id, title, industry, location, scope, duration, description, 
+      requirements, merits, deadline, applyUrl, contactPerson, contactEmail, contactPhone, hideContactPhone
+    } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Saknar jobb-ID" }, { status: 400 });
+    }
+
+    // Hämta annonsen och verifiera ägandeskap
+    const existingJob = await prisma.jobAd.findUnique({ where: { id } });
+    if (!existingJob) {
+      return NextResponse.json({ error: "Jobbannonsen hittades inte" }, { status: 404 });
+    }
+
+    if (existingJob.authorId !== session.user.id && !session.user.isAdmin) {
+      return NextResponse.json({ error: "Obehörig" }, { status: 403 });
+    }
+
+    const updatedJob = await prisma.jobAd.update({
+      where: { id },
+      data: {
+        title,
+        industry,
+        location,
+        scope,
+        duration,
+        description,
+        requirements,
+        merits: merits || null,
+        deadline: new Date(deadline),
+        applyUrl: applyUrl || null,
+        contactPerson: contactPerson || null,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        hideContactPhone: hideContactPhone || false,
+      }
+    });
+
+    return NextResponse.json(updatedJob, { status: 200 });
+  } catch (error) {
+    console.error("Jobb uppdaterings fel:", error);
+    return NextResponse.json({ error: "Gick inte att uppdatera jobbannonsen" }, { status: 500 });
+  }
+}

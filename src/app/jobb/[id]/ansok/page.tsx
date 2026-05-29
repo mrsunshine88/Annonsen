@@ -59,7 +59,7 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
     // Assuming /api/upload supports PDFs
     
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("files", file);
 
     try {
       const res = await fetch("/api/upload", {
@@ -67,10 +67,10 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
         body: formData,
       });
       const data = await res.json();
-      if (res.ok && data.url) {
-        setUrl(data.url);
+      if (res.ok && data.urls && data.urls.length > 0) {
+        setUrl(data.urls[0]);
       } else {
-        showNotification("Något gick fel vid uppladdningen. Säkerställ att det är ett giltigt format.", "error");
+        showNotification(data.error || "Något gick fel vid uppladdningen. Säkerställ att det är ett giltigt format.", "error");
       }
     } catch (err) {
       console.error("Upload error", err);
