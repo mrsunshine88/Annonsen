@@ -229,13 +229,15 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
   color: var(--color-text-secondary);
   font-weight: 600;
   padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
+  border-radius: 100px;
   transition: all var(--transition-fast);
 }
 
 .dashboard-link:hover {
-  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
-  color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .chat-list-item:hover {
@@ -244,14 +246,16 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
 
 /* Navbar specific */
 .navbar-header {
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5); /* Semi-transparent border */
-  background-color: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 15px -3px rgba(0,0,0,0.03);
+  top: 1rem;
+  z-index: 1000;
+  max-width: 1200px;
+  margin: 1rem auto 2rem auto;
+  border-radius: 100px;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
   transition: all var(--transition-normal);
 }
 
@@ -259,7 +263,7 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.5rem;
 }
 
 .navbar-logo {
