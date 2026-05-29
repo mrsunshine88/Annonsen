@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function AdminKostnadPage() {
+  const { showNotification } = useNotification();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -79,9 +81,9 @@ export default function AdminKostnadPage() {
           bumpEnabled, bumpPrice
         })
       });
-      alert("Inställningar sparade!");
+      showNotification("Inställningar sparade!", "success");
     } catch (e) {
-      alert("Kunde inte spara.");
+      showNotification("Kunde inte spara.", "error");
     } finally {
       setSaving(false);
     }
@@ -95,10 +97,10 @@ export default function AdminKostnadPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ categoryId: selectedCategoryId, customPrice: customPrice === "" ? null : Number(customPrice) })
       });
-      alert("Kategoripris sparat!");
+      showNotification("Kategoripris sparat!", "success");
       fetchSettingsAndCategories(); // Ladda om för att få uppdaterade värden
     } catch (e) {
-      alert("Kunde inte spara kategoripriset.");
+      showNotification("Kunde inte spara kategoripriset.", "error");
     }
   };
 
@@ -325,10 +327,10 @@ export default function AdminKostnadPage() {
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({ categoryId: cat.id, customPrice: Number(val) })
                             });
-                            alert("Priset uppdaterades!");
+                            showNotification("Priset uppdaterades!", "success");
                             fetchSettingsAndCategories();
                           } catch (e) {
-                            alert("Kunde inte ändra priset.");
+                            showNotification("Kunde inte ändra priset.", "error");
                           }
                         }}
                       >
@@ -346,7 +348,7 @@ export default function AdminKostnadPage() {
                             });
                             fetchSettingsAndCategories();
                           } catch (e) {
-                            alert("Kunde inte ta bort priset.");
+                            showNotification("Kunde inte ta bort priset.", "error");
                           }
                         }}
                       >

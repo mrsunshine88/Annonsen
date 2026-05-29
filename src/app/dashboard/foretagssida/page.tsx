@@ -36,8 +36,8 @@ export default async function DashboardCompanyPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ color: "var(--color-primary)", margin: 0 }}>Förhandsgranskning av företagssida</h1>
-        <Link href={`/butik/${user.id}`} target="_blank" className="btn-secondary">
-          Se live-versionen ↗
+        <Link href={`/butik/${user.id}`} className="btn-secondary">
+          Förhandsgranska
         </Link>
       </div>
 
@@ -71,7 +71,7 @@ export default async function DashboardCompanyPage() {
             {user.companyAddress && <div>📍 {user.companyAddress}, {user.companyCity}</div>}
             {user.companyOpeningHours && <div>🕒 {user.companyOpeningHours}</div>}
             {user.companyPhone && <div>📞 {user.companyPhone}</div>}
-            {user.companyWebsite && <div>🌐 <a href={user.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>}
+            {user.companyWebsite && <div>🌐 <a href={user.companyWebsite} rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>}
             {user.companyOrgNr && <div>📋 Org.nr: {user.companyOrgNr}</div>}
           </div>
         </div>

@@ -29,6 +29,8 @@ export const viewport = {
   maximumScale: 1,
 };
 
+import { NotificationProvider } from "@/components/NotificationProvider";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -39,11 +41,13 @@ export default async function RootLayout({
     <html lang="sv">
       <body className={inter.className}>
         <Providers>
-          <ServiceWorkerRegister />
-          <Navbar />
-          <main className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '2rem', paddingBottom: '2rem' }}>
-            {children}
-          </main>
+          <NotificationProvider>
+            <ServiceWorkerRegister />
+            <Navbar />
+            <main className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '2rem', paddingBottom: '2rem' }}>
+              {children}
+            </main>
+          </NotificationProvider>
         </Providers>
       </body>
     </html>

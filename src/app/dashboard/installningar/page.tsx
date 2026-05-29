@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function SettingsPage() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export default function SettingsPage() {
   const [autoLocation, setAutoLocation] = useState(true);
   const [defaultLocation, setDefaultLocation] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
+  const { showNotification, showConfirm } = useNotification();
 
   const [accountType, setAccountType] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -79,8 +81,9 @@ export default function SettingsPage() {
   };
 
   const handleDelete = async () => {
-    if (confirm("Är du helt säker på att du vill ta bort ditt konto? Detta går inte att ångra.")) {
-      alert("Konto borttaget. (Demo)");
+    const confirmed = await showConfirm({ message: "Är du helt säker på att du vill ta bort ditt konto? Detta går inte att ångra." });
+    if (confirmed) {
+      showNotification("Konto borttaget. (Demo)", "success");
       signOut({ callbackUrl: "/" });
     }
   };
@@ -114,7 +117,7 @@ export default function SettingsPage() {
         setCompanyLogoUrl(data.urls[0]);
       }
     } catch (err) {
-      alert("Fel vid uppladdning av bild.");
+      showNotification("Fel vid uppladdning av bild.", "error");
     } finally {
       setUploadingLogo(false);
     }

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function CreateAdForm({ categories, autoLocation = true, defaultLocation, initialData, settings, user }: { categories: any[], autoLocation?: boolean, defaultLocation?: string | null, initialData?: any, settings?: any, user?: any }) {
+  const { showNotification } = useNotification();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -310,7 +312,7 @@ export default function CreateAdForm({ categories, autoLocation = true, defaultL
               if (e.target.files) {
                 const selected = Array.from(e.target.files);
                 if (selected.length > 3) {
-                  alert("Du kan max välja 3 bilder.");
+                  showNotification("Du kan max välja 3 bilder.", "info");
                   setFiles(selected.slice(0, 3));
                 } else {
                   setFiles(selected);

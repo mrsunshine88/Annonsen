@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { 
       title, industry, location, scope, duration, description, 
-      requirements, merits, deadline, applyUrl, contactPerson, contactEmail 
+      requirements, merits, deadline, applyUrl, contactPerson, contactEmail, contactPhone, hideContactPhone
     } = body;
 
     const job = await prisma.jobAd.create({
@@ -46,6 +46,8 @@ export async function POST(req: Request) {
         applyUrl: applyUrl || null,
         contactPerson: contactPerson || null,
         contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        hideContactPhone: hideContactPhone || false,
         companyName: session.user.companyName || session.user.name || "Arbetsgivare",
         authorId: session.user.id
       }

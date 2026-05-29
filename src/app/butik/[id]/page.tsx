@@ -71,7 +71,7 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
             {user.companyAddress && <div>📍 {user.companyAddress}, {user.companyCity}</div>}
             {user.companyOpeningHours && <div>🕒 {user.companyOpeningHours}</div>}
             {user.companyPhone && <div>📞 {user.companyPhone}</div>}
-            {user.companyWebsite && <div>🌐 <a href={user.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>}
+            {user.companyWebsite && <div>🌐 <a href={user.companyWebsite} rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>}
             {user.companyOrgNr && <div>📋 Org.nr: {user.companyOrgNr}</div>}
           </div>
         </div>

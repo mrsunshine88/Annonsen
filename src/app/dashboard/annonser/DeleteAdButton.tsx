@@ -2,23 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function DeleteAdButton({ adId }: { adId: string }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const { showNotification, showConfirm } = useNotification();
 
   const handleDelete = async () => {
-    if (!confirm("Är du säker på att du vill radera annonsen?")) return;
+    const confirmed = await showConfirm({ message: "Är du säker på att du vill radera annonsen?" });
+    if (!confirmed) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/ads?adId=${adId}`, { method: "DELETE" });
       if (res.ok) {
+        showNotification("Annonsen har raderats", "success");
         router.refresh(); // Ladda om server-komponenten
       } else {
-        alert("Ett fel uppstod när annonsen skulle raderas.");
+        showNotification("Ett fel uppstod när annonsen skulle raderas.", "error");
       }
     } catch (err) {
-      alert("Kunde inte radera annonsen.");
+      showNotification("Kunde inte radera annonsen.", "error");
     } finally {
       setDeleting(false);
     }

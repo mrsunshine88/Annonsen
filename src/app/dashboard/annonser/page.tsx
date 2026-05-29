@@ -3,7 +3,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
 import DeleteAdButton from "./DeleteAdButton";
-import BackButton from "@/components/BackButton";
 
 const prisma = new PrismaClient();
 
@@ -21,7 +20,6 @@ export default async function MyAdsPage() {
 
   return (
     <div>
-      <BackButton label="Tillbaka till start" />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: "1rem" }}>
         <h2>Mina Annonser</h2>
         <Link href="/skapa" className="btn-primary">Skapa ny annons</Link>

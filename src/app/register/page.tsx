@@ -67,7 +67,7 @@ export default function RegisterPage() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "3rem auto" }}>
-      <BackButton label="Tillbaka" />
+      <BackButton label="Tillbaka till start" href="/" />
       <div className="glass-panel" style={{ padding: "2rem", marginTop: "1rem" }}>
         <h1 style={{ fontSize: "1.8rem", textAlign: "center", marginBottom: "1.5rem" }}>Skapa konto</h1>
         

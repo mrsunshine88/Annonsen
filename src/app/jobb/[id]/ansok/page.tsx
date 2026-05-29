@@ -4,8 +4,10 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import BackButton from "@/components/BackButton";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function ApplyJobPage({ params }: { params: Promise<{ id: string }> }) {
+  const { showNotification } = useNotification();
   const resolvedParams = use(params);
   const { data: session } = useSession();
   const router = useRouter();
@@ -68,18 +70,18 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
       if (res.ok && data.url) {
         setUrl(data.url);
       } else {
-        alert("Något gick fel vid uppladdningen. Säkerställ att det är ett giltigt format.");
+        showNotification("Något gick fel vid uppladdningen. Säkerställ att det är ett giltigt format.", "error");
       }
     } catch (err) {
       console.error("Upload error", err);
-      alert("Något gick fel vid uppladdningen.");
+      showNotification("Något gick fel vid uppladdningen.", "error");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cvUrl || !coverLetterUrl) {
-      return alert("Du måste ladda upp både CV och personligt brev.");
+      return showNotification("Du måste ladda upp både CV och personligt brev.", "error");
     }
     
     setSubmitting(true);
@@ -98,15 +100,15 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
       });
       
       if (res.ok) {
-        alert("Din ansökan har skickats!");
+        showNotification("Din ansökan har skickats!", "success");
         router.push(`/jobb/${resolvedParams.id}?applied=true`);
       } else {
         const data = await res.json();
-        alert(data.error || "Ett fel uppstod när ansökan skulle skickas.");
+        showNotification(data.error || "Ett fel uppstod när ansökan skulle skickas.", "error");
       }
     } catch (e) {
       console.error(e);
-      alert("Något gick fel.");
+      showNotification("Något gick fel.", "error");
     } finally {
       setSubmitting(false);
     }

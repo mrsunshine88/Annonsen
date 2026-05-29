@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/components/NotificationProvider";
 
 interface AdActionsProps {
   adId: string;
@@ -19,6 +20,7 @@ export default function AdActions({ adId, authorId, authorName, initialIsFavorit
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reporting, setReporting] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleShare = () => {
     if (navigator.share) {
@@ -28,12 +30,12 @@ export default function AdActions({ adId, authorId, authorName, initialIsFavorit
       }).catch(console.error);
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert("Länken har kopierats!");
+      showNotification("Länken har kopierats!", "success");
     }
   };
 
   const handleFavorite = async () => {
-    if (!isLoggedIn) return alert("Logga in för att spara favoriter.");
+    if (!isLoggedIn) return showNotification("Logga in för att spara favoriter.", "info");
     setIsFavorite(!isFavorite);
     try {
       await fetch('/api/favorites', {
@@ -49,7 +51,7 @@ export default function AdActions({ adId, authorId, authorName, initialIsFavorit
   };
 
   const handleFollow = async () => {
-    if (!isLoggedIn) return alert("Logga in för att följa användare.");
+    if (!isLoggedIn) return showNotification("Logga in för att följa användare.", "info");
     setIsFollowing(!isFollowing);
     try {
       await fetch('/api/follows', {
@@ -66,7 +68,7 @@ export default function AdActions({ adId, authorId, authorName, initialIsFavorit
 
   const handleReport = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoggedIn) return alert("Logga in för att anmäla.");
+    if (!isLoggedIn) return showNotification("Logga in för att anmäla.", "info");
     setReporting(true);
     try {
       const res = await fetch('/api/reports', {
@@ -75,11 +77,11 @@ export default function AdActions({ adId, authorId, authorName, initialIsFavorit
         body: JSON.stringify({ adId, reason: reportReason })
       });
       if (res.ok) {
-        alert("Annonsen har anmälts. Tack!");
+        showNotification("Annonsen har anmälts. Tack!", "success");
         setShowReportModal(false);
         setReportReason("");
       } else {
-        alert("Något gick fel.");
+        showNotification("Något gick fel.", "error");
       }
     } catch (e) {
       console.error(e);

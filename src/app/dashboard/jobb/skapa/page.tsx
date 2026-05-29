@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import BackButton from "@/components/BackButton";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function CreateJobAdPage() {
+  const { showNotification } = useNotification();
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -39,13 +41,13 @@ export default function CreateJobAdPage() {
       const data = await res.json();
       
       if (res.ok) {
-        alert("Jobbannonsen har skapats!");
+        showNotification("Jobbannonsen har skapats!", "success");
         router.push("/jobb");
       } else {
-        alert(data.error || "Något gick fel");
+        showNotification(data.error || "Något gick fel", "error");
       }
     } catch (error) {
-      alert("Något gick fel vid publiceringen");
+      showNotification("Något gick fel vid publiceringen", "error");
     } finally {
       setLoading(false);
     }

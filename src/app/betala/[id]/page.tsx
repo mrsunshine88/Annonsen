@@ -4,8 +4,10 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
+import { useNotification } from "@/components/NotificationProvider";
 
 function PaymentContent({ adId }: { adId: string }) {
+  const { showNotification } = useNotification();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ function PaymentContent({ adId }: { adId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adId })
       });
-      alert("Betalning genomförd via Swish!");
+      showNotification("Betalning genomförd via Swish!", "success");
       router.push("/dashboard/annonser");
     }, 2000);
   };

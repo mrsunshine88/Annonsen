@@ -82,13 +82,7 @@ export default function MessagesPage() {
           }
         )
         .subscribe();
-    }
-
-    // Fallback till polling om Supabase inte är konfigurerat (eller som extra säkerhet)
-    const interval = setInterval(fetchMessages, 15000);
-    
     return () => {
-      clearInterval(interval);
       if (channel) supabase?.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,107 +168,104 @@ export default function MessagesPage() {
         fetchMessages();
       }
     } catch (error) {
-      console.error(error);
-    }
-  };
-
-  return (
-    <div className="meddelanden-wrapper" style={{ display: "flex", gap: "2rem", height: "75vh" }}>
-      {/* Vänsterspalt: Konversationer */}
-      <aside className="glass-panel meddelanden-sidebar" style={{ width: "300px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <h3 style={{ padding: "1.5rem", margin: 0, borderBottom: "1px solid var(--color-border)" }}>Inkorg</h3>
-        <div style={{ overflowY: "auto", flex: 1 }}>
-          {conversations.length === 0 ? (
-            <p style={{ padding: "1.5rem", color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>Inga meddelanden ännu.</p>
-          ) : (
-            conversations.map(([key, conv]) => (
-              <div 
-                key={key} 
-                onClick={() => setSelectedChat(key)}
-                className="chat-list-item"
-                style={{ 
-                  padding: "1rem", 
-                  borderBottom: "2px solid var(--color-text-muted)",
-                  borderLeft: selectedChat === key ? "4px solid var(--color-primary)" : "4px solid transparent",
-                  cursor: "pointer",
-                  backgroundColor: selectedChat === key ? "rgba(59, 130, 246, 0.05)" : "var(--color-bg-surface)",
-                  transition: "all 0.2s"
-                }}
-              >
-                <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.25rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {conv.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: "bold" }}>JOBB</span>}
-                  {conv.ad.title}
+      console.error(erro    <div className="container" style={{ padding: "2rem 0" }}>
+      <div className="meddelanden-wrapper" style={{ display: "flex", gap: "2rem", height: "75vh" }}>
+        {/* Vänsterspalt: Konversationer */}
+        <aside className="glass-panel meddelanden-sidebar" style={{ width: "300px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <h3 style={{ padding: "1.5rem", margin: 0, borderBottom: "1px solid var(--color-border)" }}>Inkorg</h3>
+          <div style={{ overflowY: "auto", flex: 1 }}>
+            {conversations.length === 0 ? (
+              <p style={{ padding: "1.5rem", color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>Inga meddelanden ännu.</p>
+            ) : (
+              conversations.map(([key, conv]) => (
+                <div 
+                  key={key} 
+                  onClick={() => setSelectedChat(key)}
+                  className="chat-list-item"
+                  style={{ 
+                    padding: "1rem", 
+                    borderBottom: "2px solid var(--color-text-muted)",
+                    borderLeft: selectedChat === key ? "4px solid var(--color-primary)" : "4px solid transparent",
+                    cursor: "pointer",
+                    backgroundColor: selectedChat === key ? "rgba(59, 130, 246, 0.05)" : "var(--color-bg-surface)",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.25rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    {conv.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: "bold" }}>JOBB</span>}
+                    {conv.ad.title}
+                  </div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", display: "flex", justifyContent: "space-between" }}>
+                    <span>{conv.otherUser.name || "Anonym"}</span>
+                    <span>{conv.lastUpdated.toLocaleDateString("sv-SE")}</span>
+                  </div>
                 </div>
-                <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", display: "flex", justifyContent: "space-between" }}>
-                  <span>{conv.otherUser.name || "Anonym"}</span>
-                  <span>{conv.lastUpdated.toLocaleDateString("sv-SE")}</span>
+              ))
+            )}
+          </div>
+        </aside>
+
+        {/* Högerspalt: Aktiv Chatt */}
+        <main className="glass-panel" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {activeChatData ? (
+            <>
+              {/* Header */}
+              <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <h3 style={{ margin: "0 0 0.25rem 0" }}>{activeChatData.otherUser.name || "Anonym"}</h3>
+                    {activeChatData.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", fontWeight: "bold" }}>JOBB</span>}
+                  </div>
+                  <div style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)" }}>
+                    Gällande: <Link href={activeChatData.isJob ? `/jobb/${activeChatData.ad.id}` : `/annons/${activeChatData.ad.id}`} style={{ color: "var(--color-primary)" }}>{activeChatData.ad.title}</Link>
+                  </div>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </aside>
 
-      {/* Högerspalt: Aktiv Chatt */}
-      <main className="glass-panel" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {activeChatData ? (
-          <>
-            {/* Header */}
-            <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <h3 style={{ margin: "0 0 0.25rem 0" }}>{activeChatData.otherUser.name || "Anonym"}</h3>
-                  {activeChatData.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", fontWeight: "bold" }}>JOBB</span>}
-                </div>
-                <div style={{ fontSize: "0.9rem", color: "var(--color-text-secondary)" }}>
-                  Gällande: <Link href={activeChatData.isJob ? `/jobb/${activeChatData.ad.id}` : `/annons/${activeChatData.ad.id}`} style={{ color: "var(--color-primary)" }}>{activeChatData.ad.title}</Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Meddelanden */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {activeChatData.messages.map((msg: any) => {
-                const isMe = msg.senderId === currentUser;
-                return (
-                  <div key={msg.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start" }}>
-                    <div style={{ 
-                      maxWidth: "70%", 
-                      padding: "0.75rem 1rem", 
-                      borderRadius: isMe ? "var(--radius-md) var(--radius-md) 0 var(--radius-md)" : "var(--radius-md) var(--radius-md) var(--radius-md) 0",
-                      backgroundColor: isMe ? "var(--color-primary)" : "var(--color-border)",
-                      color: isMe ? "white" : "inherit"
-                    }}>
-                      <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
-                      <div style={{ fontSize: "0.7rem", marginTop: "0.5rem", textAlign: "right", opacity: 0.7 }}>
-                        {new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+              {/* Meddelanden */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {activeChatData.messages.map((msg: any) => {
+                  const isMe = msg.senderId === currentUser;
+                  return (
+                    <div key={msg.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start" }}>
+                      <div style={{ 
+                        maxWidth: "70%", 
+                        padding: "0.75rem 1rem", 
+                        borderRadius: isMe ? "var(--radius-md) var(--radius-md) 0 var(--radius-md)" : "var(--radius-md) var(--radius-md) var(--radius-md) 0",
+                        backgroundColor: isMe ? "var(--color-primary)" : "var(--color-border)",
+                        color: isMe ? "white" : "inherit"
+                      }}>
+                        <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
+                        <div style={{ fontSize: "0.7rem", marginTop: "0.5rem", textAlign: "right", opacity: 0.7 }}>
+                          {new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
 
-            {/* Skrivruta */}
-            <form onSubmit={sendMessage} style={{ padding: "1.5rem", borderTop: "1px solid var(--color-border)", display: "flex", gap: "1rem" }}>
-              <input 
-                type="text" 
-                className="input-field" 
-                placeholder="Skriv ett meddelande..." 
-                value={replyContent}
-                onChange={e => setReplyContent(e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <button type="submit" className="btn-primary">Skicka</button>
-            </form>
-          </>
-        ) : (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-secondary)" }}>
-            Välj en konversation i menyn för att visa meddelanden.
-          </div>
-        )}
-      </main>
+              {/* Skrivruta */}
+              <form onSubmit={sendMessage} style={{ padding: "1.5rem", borderTop: "1px solid var(--color-border)", display: "flex", gap: "1rem" }}>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Skriv ett meddelande..." 
+                  value={replyContent}
+                  onChange={e => setReplyContent(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button type="submit" className="btn-primary">Skicka</button>
+              </form>
+            </>
+          ) : (
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-secondary)" }}>
+              Välj en konversation i menyn för att visa meddelanden.
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

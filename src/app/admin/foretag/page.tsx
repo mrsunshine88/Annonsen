@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function AdminCompanyPricingPage() {
+  const { showNotification } = useNotification();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -54,10 +56,10 @@ export default function AdminCompanyPricingPage() {
           companySubscriptionPrice: Number(companySubscriptionPrice)
         })
       });
-      alert("Företagspriserna sparades!");
+      showNotification("Företagspriserna sparades!", "success");
       fetchSettings(); // Ladda om för att få uppdaterade värden
     } catch (e) {
-      alert("Kunde inte spara priserna.");
+      showNotification("Kunde inte spara priserna.", "error");
     } finally {
       setSaving(false);
     }
@@ -208,10 +210,10 @@ export default function AdminCompanyPricingPage() {
                               customCompanySubscriptionPrice: subVal === "" ? null : Number(subVal)
                             })
                           });
-                          alert("Unikt pris sparat för " + (company.companyName || company.email));
+                          showNotification("Unikt pris sparat för " + (company.companyName || company.email), "success");
                           fetchSettings();
                         } catch (e) {
-                          alert("Kunde inte ändra priset.");
+                          showNotification("Kunde inte ändra priset.", "error");
                         }
                       }}
                     >

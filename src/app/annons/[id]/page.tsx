@@ -149,7 +149,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                   {ad.author.companyAddress && <div>📍 {ad.author.companyAddress}, {ad.author.companyCity}</div>}
                   {ad.author.companyOpeningHours && <div>🕒 {ad.author.companyOpeningHours}</div>}
                   {ad.author.companyWebsite && (
-                    <div>🌐 <a href={ad.author.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>
+                    <div>🌐 <a href={ad.author.companyWebsite} rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>
                   )}
                   {ad.author.companyOrgNr && <div style={{ fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>Org.nr: {ad.author.companyOrgNr}</div>}
                 </div>

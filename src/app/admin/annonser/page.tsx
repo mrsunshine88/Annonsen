@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function AdminAdsPage() {
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const { showConfirm } = useNotification();
 
   const fetchAds = async () => {
     try {
@@ -25,7 +27,8 @@ export default function AdminAdsPage() {
   }, []);
 
   const clearImages = async (adId: string) => {
-    if (!confirm("Vill du verkligen ta bort alla bilder på denna annons? (Den får då en grå rutan)")) return;
+    const confirmed = await showConfirm({ message: "Vill du verkligen ta bort alla bilder på denna annons? (Den får då en grå ruta)" });
+    if (!confirmed) return;
     try {
       const res = await fetch("/api/admin/ads", {
         method: "PUT",
@@ -39,7 +42,8 @@ export default function AdminAdsPage() {
   };
 
   const deleteAd = async (adId: string) => {
-    if (!confirm("Är du helt säker på att du vill radera denna annons permanent?")) return;
+    const confirmed = await showConfirm({ message: "Är du helt säker på att du vill radera denna annons permanent?" });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/admin/ads?adId=${adId}`, { method: "DELETE" });
       if (res.ok) fetchAds();
@@ -100,7 +104,6 @@ export default function AdminAdsPage() {
                 <td style={{ padding: "1rem", textAlign: "right", display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
                   <Link 
                     href={`/annons/${ad.id}`}
-                    target="_blank"
                     className="btn-secondary"
                     style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem", textDecoration: "none" }}
                   >

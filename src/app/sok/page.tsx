@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import SearchClient from "./SearchClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import BackButton from "@/components/BackButton";
 
 const prisma = new PrismaClient();
 
@@ -33,7 +32,6 @@ export default async function SearchPage() {
 
   return (
     <div style={{ minHeight: "80vh" }}>
-      <BackButton label="Tillbaka till start" style={{ marginBottom: "1rem" }} />
       <SearchClient categories={categories} autoLocation={autoLocation} defaultLocation={defaultLocation} />
     </div>
   );

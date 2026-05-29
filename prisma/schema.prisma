@@ -109,6 +109,12 @@ model Ad {
   messages Message[]
   favorites Favorite[]
   reports  AdReport[]
+
+  @@index([categoryId])
+  @@index([location])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([price])
 }
 
 model Message {
@@ -129,6 +135,9 @@ model Message {
 
   jobAdId String?
   jobAd   JobAd?  @relation(fields: [jobAdId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId])
+  @@index([adId])
 }
 
 model Settings {
@@ -174,10 +183,11 @@ model Follow {
 }
 
 model AdReport {
-  id        String   @id @default(cuid())
-  reason    String
-  status    String   @default("Ny") // "Ny", "Hanterad"
-  userId    String?
+  id          String   @id @default(cuid())
+  reason      String
+  status      String   @default("Ny") // "Ny", "Hanterad"
+  adminViewed Boolean  @default(false)
+  userId      String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   adId      String
   ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
@@ -203,6 +213,8 @@ model JobAd {
   applyUrl        String?  // Om ansökan sker externt
   contactPerson   String?  // Namn
   contactEmail    String?  // E-post
+  contactPhone    String?  // Telefon
+  hideContactPhone Boolean  @default(false)
   
   isPaid          Boolean  @default(true)
   paymentId       String?
@@ -215,6 +227,9 @@ model JobAd {
   
   applications    JobApplication[]
   messages        Message[]
+
+  @@index([authorId])
+  @@index([createdAt])
 }
 
 model JobApplication {

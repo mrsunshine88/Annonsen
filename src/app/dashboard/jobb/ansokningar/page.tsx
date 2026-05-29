@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
-import BackButton from "@/components/BackButton";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +22,6 @@ export default async function JobApplicationsPage() {
 
   return (
     <div>
-      <BackButton label="Tillbaka" />
       <h2 style={{ marginBottom: '2rem', marginTop: '1rem', color: 'var(--color-primary)' }}>Mottagna Ansökningar</h2>
 
       {jobAds.length === 0 ? (
@@ -43,7 +41,7 @@ export default async function JobApplicationsPage() {
                     Ansökningar: <strong>{job.applications.length} st</strong>
                   </div>
                 </div>
-                <Link href={`/jobb/${job.id}`} target="_blank" className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Visa Annons</Link>
+                <Link href={`/jobb/${job.id}`} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Visa Annons</Link>
               </div>
 
               {job.applications.length === 0 ? (
@@ -72,8 +70,8 @@ export default async function JobApplicationsPage() {
                           <td style={{ padding: '1rem 0.5rem', fontSize: '0.9rem' }}>{new Date(app.createdAt).toLocaleDateString("sv-SE")}</td>
                           <td style={{ padding: '1rem 0.5rem' }}>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <a href={app.cvUrl} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>📄 CV</a>
-                              <a href={app.coverLetterUrl} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>✉️ Brev</a>
+                              <a href={app.cvUrl} rel="noreferrer" className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>📄 CV</a>
+                              <a href={app.coverLetterUrl} rel="noreferrer" className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>✉️ Brev</a>
                             </div>
                           </td>
                           <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>

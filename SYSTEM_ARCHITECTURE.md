@@ -40,12 +40,23 @@ Vi har implementerat tre huvudspår för användare (styrs via fältet `accountT
 2. **Företag:** Har en egen "butikssida" (`/butik/[id]`). Kan prenumerera mot en månadskostnad och har ofta specialpriser på fordonsannonser.
 3. **Arbetsgivare:** Kan komma åt Jobb-dashboardet för att lägga ut platsannonser (`JobAd`) och ta emot/hantera `JobApplication`. Kan ha separat prissättning (per månad / per platsannons).
 
-### 4.2 Admin och Root
+### 4.2 Admin, RBAC och Godkännanden
 - **Admin (`isAdmin: true`):** Har tillgång till `/admin/*`. Kan redigera andras annonser, blockera konton, tömma uppladdade bilder från regelbrytande annonser och sätta priser (Settings).
+- **Godkännandesystem (RBAC):** Företag och Arbetsgivare publiceras *inte* automatiskt. I tabellen `User` finns två kritiska fält:
+  - `companyPageApproved`: Styr om deras publika butikssida (`/butik/[id]`) är synlig för allmänheten.
+  - `canPublishAds`: Styr om de överhuvudtaget får skapa nya annonser och om deras befintliga annonser syns i sökresultaten.
+  *Varför?* Detta ger plattformsägaren full kontroll över kvaliteten och säkerställer att B2B-kunder kan faktureras korrekt innan de utnyttjar plattformen. Är man inte godkänd visas tydliga varningar i dashboarden.
 - **Root-admin (`isRoot: true`):** Det existerar ett hårdkodat Root-konto (`apersson508@gmail.com`). *Varför?* För att skydda ägaren. Logiken i NextAuth garanterar att detta e-postkonto alltid tilldelas `isAdmin` och `isRoot` vid inloggning. Ett root-konto kan **aldrig** blockeras, få sina rättigheter borttagna, eller raderas av andra admins.
 
 ### 4.3 Blockering
 När en admin blockerar en användare sätts `isBlocked = true` i databasen. På klientsidan (`Navbar.tsx` polling) och via NextAuths `authorize`-funktion verifieras detta, och den blockerade användaren loggas genast ut och nekas åtkomst.
+
+### 4.4 Dashboard och Navigation
+När en användare loggar in sker en initial omdirigering i `app/page.tsx` och via `Navbar`:
+- Privatpersoner skickas till Mina Annonser.
+- Arbetsgivare tvingas direkt till Jobb-vyn (`/dashboard/jobb`).
+- Layouten i `src/app/dashboard/layout.tsx` anpassar menyn till vänster beroende på `accountType`, så att Arbetsgivare t.ex. inte ser "Dina Annonser" (varor) utan enbart "Dina Jobb". 
+- Företag och Arbetsgivare har en intern länk till "Din Företagssida" (`/dashboard/foretagssida`) där de kan förhandsgranska exakt hur deras butik/profil ser ut för omvärlden utan att lämna systemet. Inga externa fönster (`target="_blank"`) öppnas, allt renderas integrerat.
 
 ---
 
@@ -57,8 +68,9 @@ När en admin blockerar en användare sätts `isBlocked = true` i databasen. På
 
 ### 5.2 Jobbportalen
 En helt isolerad portal byggd sida-vid-sida med varuannonserna:
-- **Publikt (`/jobb` & `/jobb/[id]`):** Besökare kan söka och läsa platsannonser. Ansökan (`/jobb/[id]/ansok`) tvingar användaren att ladda upp CV och brev, vilka sedan skapar en `JobApplication` kopplad till annonsen.
-- **Arbetsgivare (`/dashboard/jobb/...`):** Här skapas annonsen. Arbetsgivaren kan se alla inkomna ansökningar i en tabell och ladda ner dokumenten. När de vill gå vidare klickar de "Kontakta i chatt" varpå de skickas till den interna meddelandecentralen.
+- **Publikt (`/jobb` & `/jobb/[id]`):** Besökare kan söka och läsa platsannonser. *Teknisk detalj:* Dessa sidor använder `export const dynamic = 'force-dynamic';` och awaitar `searchParams` enligt Next.js 15-standard. *Varför?* För att förhindra att Next.js statiskt cachar en tom jobblista. Detta garanterar att sökningarna alltid hämtar dagsfärsk data från databasen.
+- **Ansökan:** (`/jobb/[id]/ansok`) tvingar användaren att ladda upp CV och brev, vilka sedan skapar en `JobApplication` kopplad till annonsen.
+- **Arbetsgivare (`/dashboard/jobb/...`):** Här skapas annonsen. Arbetsgivaren kan se alla inkomna ansökningar i en tabell och ladda ner dokumenten. När de vill gå vidare klickar de "Kontakta i chatt" varpå de skickas till den interna meddelandecentralen. De kan även radera och hantera sina annonser härifrån.
 
 ### 5.3 Meddelandesystem (Chatt)
 Chatten (`/dashboard/meddelanden`) använder sig av polling och WebSockets:

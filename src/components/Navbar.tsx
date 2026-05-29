@@ -10,6 +10,7 @@ export default function Navbar() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unhandledReportsCount, setUnhandledReportsCount] = useState(0);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -23,6 +24,9 @@ export default function Navbar() {
             signOut({ callbackUrl: '/login?error=blocked' });
           } else {
             setUnreadCount(data.unreadCount);
+            if (data.unhandledReportsCount !== undefined) {
+              setUnhandledReportsCount(data.unhandledReportsCount);
+            }
           }
         }
       } catch (err) {
@@ -83,7 +87,7 @@ export default function Navbar() {
           {status === "loading" ? null : session ? (
             <>
               <Link href="/dashboard/annonser" className="dashboard-link">Mina sidor</Link>
-              <Link href="/dashboard/meddelanden" className="dashboard-link" style={{ position: 'relative' }}>
+              <Link href="/meddelanden" className="dashboard-link" style={{ position: 'relative' }}>
                 Meddelanden
                 {unreadCount > 0 && (
                   <span style={{ position: 'absolute', top: '2px', right: '2px', background: 'red', color: 'white', borderRadius: '50%', padding: '0 6px', fontSize: '10px', fontWeight: 'bold' }}>
@@ -93,7 +97,14 @@ export default function Navbar() {
               </Link>
 
               {(session.user as any)?.isAdmin && (
-                <Link href="/admin/konton" className="dashboard-link">Admin</Link>
+                <Link href="/admin/konton" className="dashboard-link" style={{ position: 'relative' }}>
+                  Admin
+                  {unhandledReportsCount > 0 && (
+                    <span style={{ position: 'absolute', top: '2px', right: '-5px', background: 'var(--color-error, red)', color: 'white', borderRadius: '50%', padding: '0 5px', fontSize: '10px', fontWeight: 'bold' }}>
+                      {unhandledReportsCount}
+                    </span>
+                  )}
+                </Link>
               )}
               <button onClick={() => signOut({ callbackUrl: '/' })} className="dashboard-link-danger">Logga ut</button>
             </>
@@ -137,7 +148,7 @@ export default function Navbar() {
           {status === "loading" ? null : session ? (
             <>
               <Link href="/dashboard/annonser" className="mobile-dropdown-item" onClick={closeMenu}>Mina sidor</Link>
-              <Link href="/dashboard/meddelanden" className="mobile-dropdown-item" onClick={closeMenu} style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Link href="/meddelanden" className="mobile-dropdown-item" onClick={closeMenu} style={{ display: 'flex', justifyContent: 'space-between' }}>
                 Meddelanden
                 {unreadCount > 0 && (
                   <span style={{ background: 'red', color: 'white', borderRadius: '50%', padding: '0 8px', fontSize: '12px', fontWeight: 'bold' }}>
@@ -147,7 +158,14 @@ export default function Navbar() {
               </Link>
 
               {(session.user as any)?.isAdmin && (
-                <Link href="/admin/konton" className="mobile-dropdown-item" onClick={closeMenu}>Admin</Link>
+                <Link href="/admin/konton" className="mobile-dropdown-item" onClick={closeMenu} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  Admin
+                  {unhandledReportsCount > 0 && (
+                    <span style={{ background: 'var(--color-error, red)', color: 'white', borderRadius: '50%', padding: '0 8px', fontSize: '12px', fontWeight: 'bold' }}>
+                      {unhandledReportsCount}
+                    </span>
+                  )}
+                </Link>
               )}
               <button onClick={() => { closeMenu(); signOut({ callbackUrl: '/' }); }} className="mobile-dropdown-item" style={{ color: 'var(--color-error)', textAlign: "left", width: "100%" }}>Logga ut</button>
             </>

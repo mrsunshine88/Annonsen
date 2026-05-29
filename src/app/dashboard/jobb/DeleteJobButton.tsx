@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useNotification } from "@/components/NotificationProvider";
 
 export default function DeleteJobButton({ jobId }: { jobId: string }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const { showNotification, showConfirm } = useNotification();
 
   const handleDelete = async () => {
-    if (!confirm("Är du säker på att du vill radera denna jobbannons? Detta går inte att ångra.")) {
+    const confirmed = await showConfirm({ message: "Är du säker på att du vill radera denna jobbannons? Detta går inte att ångra." });
+    if (!confirmed) {
       return;
     }
 
@@ -19,14 +22,15 @@ export default function DeleteJobButton({ jobId }: { jobId: string }) {
       });
 
       if (res.ok) {
+        showNotification("Jobbannonsen har raderats", "success");
         router.refresh();
       } else {
-        alert("Gick inte att radera jobbannonsen.");
+        showNotification("Gick inte att radera jobbannonsen.", "error");
         setDeleting(false);
       }
     } catch (err) {
       console.error(err);
-      alert("Ett fel uppstod.");
+      showNotification("Ett fel uppstod.", "error");
       setDeleting(false);
     }
   };

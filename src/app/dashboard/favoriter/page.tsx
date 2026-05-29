@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
-import BackButton from "@/components/BackButton";
 
 const prisma = new PrismaClient();
 
@@ -31,7 +30,6 @@ export default async function FavoritesPage() {
 
   return (
     <div>
-      <BackButton label="Tillbaka till start" />
       <h2 style={{ marginBottom: '2rem', marginTop: '1rem' }}>Mina Favoriter</h2>
 
       {favorites.length === 0 ? (

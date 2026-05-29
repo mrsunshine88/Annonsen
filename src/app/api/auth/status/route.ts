@@ -9,7 +9,7 @@ export async function GET() {
   const session: any = await getServerSession(authOptions);
   
   if (!session?.user) {
-    return NextResponse.json({ isBlocked: false, unreadCount: 0 });
+    return NextResponse.json({ isBlocked: false, unreadCount: 0, unhandledReportsCount: 0 });
   }
 
   const user = await prisma.user.findUnique({
@@ -18,7 +18,7 @@ export async function GET() {
   });
 
   if (!user) {
-    return NextResponse.json({ isBlocked: true, unreadCount: 0 });
+    return NextResponse.json({ isBlocked: true, unreadCount: 0, unhandledReportsCount: 0 });
   }
 
   const unreadCount = await prisma.message.count({
@@ -28,8 +28,18 @@ export async function GET() {
     }
   });
 
+  let unhandledReportsCount = 0;
+  if ((session.user as any).isAdmin) {
+    unhandledReportsCount = await prisma.adReport.count({
+      where: {
+        adminViewed: false
+      }
+    });
+  }
+
   return NextResponse.json({ 
     isBlocked: user.isBlocked, 
-    unreadCount 
+    unreadCount,
+    unhandledReportsCount
   });
 }

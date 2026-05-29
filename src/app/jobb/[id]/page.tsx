@@ -111,7 +111,7 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
 
               {daysLeft >= 0 && (
                 job.applyUrl ? (
-                  <a href={job.applyUrl} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: "block", textAlign: "center", padding: "1rem", fontSize: "1.1rem" }}>
+                  <a href={job.applyUrl} rel="noopener noreferrer" className="btn-primary" style={{ display: "block", textAlign: "center", padding: "1rem", fontSize: "1.1rem" }}>
                     Ansök via arbetsgivaren
                   </a>
                 ) : (
@@ -126,9 +126,12 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
               <div style={{ fontSize: "0.9rem" }}>
                 <h4 style={{ marginBottom: "0.5rem", color: "var(--color-text-secondary)" }}>Kontaktperson</h4>
                 {job.contactPerson ? (
-                  <div>
-                    <strong>{job.contactPerson}</strong><br />
-                    {job.contactEmail && <a href={`mailto:${job.contactEmail}`} style={{ color: "var(--color-primary)" }}>{job.contactEmail}</a>}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                    <strong>{job.contactPerson}</strong>
+                    {job.contactEmail && <a href={`mailto:${job.contactEmail}`} style={{ color: "var(--color-primary)", textDecoration: "none" }}>{job.contactEmail}</a>}
+                    {job.contactPhone && !job.hideContactPhone && (
+                      <a href={`tel:${job.contactPhone}`} style={{ color: "var(--color-text-secondary)", textDecoration: "none" }}>{job.contactPhone}</a>
+                    )}
                   </div>
                 ) : (
                   <div style={{ color: "var(--color-text-secondary)" }}>Ingen kontaktperson angiven</div>

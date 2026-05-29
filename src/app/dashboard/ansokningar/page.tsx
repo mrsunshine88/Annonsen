@@ -51,11 +51,11 @@ export default function ApplicationsPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <a href={app.cvUrl} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
-                    Ladda ner CV
+                  <a href={app.cvUrl} rel="noreferrer" className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
+                    Visa CV
                   </a>
-                  <a href={app.coverLetterUrl} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
-                    Personligt brev
+                  <a href={app.coverLetterUrl} rel="noreferrer" className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
+                    Visa Personligt Brev
                   </a>
                 </div>
               </div>

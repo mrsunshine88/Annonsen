@@ -20,7 +20,9 @@ export default function CreateJobForm({ settings }: { settings: any }) {
     deadline: "",
     applyUrl: "",
     contactPerson: "",
-    contactEmail: ""
+    contactEmail: "",
+    contactPhone: "",
+    hideContactPhone: false
   });
 
   const handleChange = (e: any) => {
@@ -133,6 +135,24 @@ export default function CreateJobForm({ settings }: { settings: any }) {
         <div>
           <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Kontaktperson (E-post)</label>
           <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} className="input-field" placeholder="anna@företag.se" />
+        </div>
+      </div>
+
+      <div className="grid-2-col">
+        <div>
+          <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Kontaktperson (Telefon)</label>
+          <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} className="input-field" placeholder="070-123 45 67" />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", marginTop: "1.5rem" }}>
+          <input 
+            type="checkbox" 
+            name="hideContactPhone" 
+            checked={formData.hideContactPhone} 
+            onChange={(e) => setFormData({ ...formData, hideContactPhone: e.target.checked })} 
+            style={{ marginRight: "0.5rem", width: "1.2rem", height: "1.2rem", cursor: "pointer" }} 
+            id="hideContactPhone"
+          />
+          <label htmlFor="hideContactPhone" style={{ fontWeight: 500, cursor: "pointer" }}>Dölj telefonnummer i annonsen</label>
         </div>
       </div>
 

@@ -2,13 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useNotification } from "@/components/NotificationProvider";
+import Image from "next/image";
 
 export default function SearchClient({ categories, autoLocation, defaultLocation }: { categories: any[], autoLocation: boolean, defaultLocation?: string | null }) {
+  const { showNotification } = useNotification();
   const router = useRouter();
   const searchParams = useSearchParams();
   
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // States for filters
   const [q, setQ] = useState(searchParams.get("q") || "");
@@ -87,8 +93,15 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
       .catch(console.error);
   }, [locations]);
 
-  const fetchAds = async () => {
-    setLoading(true);
+  const fetchAds = async (isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setPage(1);
+    }
+    
+    const currentPage = isLoadMore ? page + 1 : 1;
     
     // Bygg URL
     const params = new URLSearchParams();
@@ -140,17 +153,29 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
       if (drivetrain) params.set("drivetrain", drivetrain);
     }
 
-    // Uppdatera URL utan att ladda om sidan
-    router.replace(`/sok?${params.toString()}`, { scroll: false });
+    params.set("page", currentPage.toString());
+
+    // Uppdatera URL utan att ladda om sidan (men inkludera inte page för att hålla URLen ren om man inte vill)
+    const urlParams = new URLSearchParams(params.toString());
+    urlParams.delete("page");
+    router.replace(`/sok?${urlParams.toString()}`, { scroll: false });
 
     try {
       const res = await fetch(`/api/search?${params.toString()}`);
       const data = await res.json();
-      setAds(data);
+      
+      if (isLoadMore) {
+        setAds(prev => [...prev, ...data.ads]);
+        setPage(currentPage);
+      } else {
+        setAds(data.ads || []);
+        setTotalCount(data.totalCount || 0);
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -319,7 +344,7 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                       const centerLocation = baseLocation || (locations.length > 0 ? locations[0] : null);
                       
                       if (!centerLocation) {
-                        alert("Kunde inte avgöra din hemort. Välj ett län manuellt eller ställ in din plats i Inställningar.");
+                        showNotification("Kunde inte avgöra din hemort. Välj ett län manuellt eller ställ in din plats i Inställningar.", "error");
                         return;
                       }
 
@@ -481,7 +506,7 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
 
       {/* Results Area */}
       <main style={{ flex: 1, minWidth: "300px" }}>
-        <h2 style={{ marginBottom: "1.5rem" }}>Sökresultat ({ads.length})</h2>
+        <h2 style={{ marginBottom: "1.5rem" }}>Sökresultat ({totalCount})</h2>
         
         {loading ? (
           <p>Söker...</p>
@@ -499,10 +524,9 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                 style={{ padding: "1.5rem", display: "flex", gap: "1.5rem", cursor: "pointer" }}
               >
                 {/* Bild */}
-                <div className="search-result-image" style={{ width: "120px", height: "120px", flexShrink: 0, backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div className="search-result-image" style={{ width: "120px", height: "120px", position: "relative", flexShrink: 0, backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {ad.imageUrls && ad.imageUrls.length > 0 ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <Image src={ad.imageUrls[0]} alt={ad.title} fill sizes="(max-width: 768px) 120px, 120px" style={{ objectFit: "cover" }} />
                   ) : (
                     <span style={{ color: "var(--color-text-secondary)", fontSize: "0.8rem" }}>Ingen bild</span>
                   )}
@@ -531,6 +555,19 @@ export default function SearchClient({ categories, autoLocation, defaultLocation
                 </div>
               </div>
             ))}
+            
+            {ads.length < totalCount && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+                <button 
+                  onClick={() => fetchAds(true)}
+                  disabled={loadingMore}
+                  className="btn-primary"
+                  style={{ padding: "0.75rem 2rem", borderRadius: "100px" }}
+                >
+                  {loadingMore ? "Laddar fler..." : "Ladda fler annonser"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>

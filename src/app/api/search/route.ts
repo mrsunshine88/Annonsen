@@ -11,6 +11,8 @@ export async function GET(req: Request) {
   const isCar = searchParams.get("isCar") === "true";
   const locations = searchParams.getAll("location");
   const cities = searchParams.getAll("city");
+  const page = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
+  const limit = 20;
   
   // Pris
   const minPrice = searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined;
@@ -88,13 +90,20 @@ export async function GET(req: Request) {
       whereClause.OR = textSearchOr;
     }
 
-    const ads = await prisma.ad.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      include: { category: true }
-    });
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json(ads);
+    const [ads, totalCount] = await Promise.all([
+      prisma.ad.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        include: { category: true },
+        take: limit,
+        skip: skip
+      }),
+      prisma.ad.count({ where: whereClause })
+    ]);
+
+    return NextResponse.json({ ads, totalCount, page, limit });
   } catch (error) {
     console.error("SEARCH ERROR:", error);
     return NextResponse.json({ error: "Sökningen misslyckades" }, { status: 500 });

@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
-import BackButton from "@/components/BackButton";
 
 const prisma = new PrismaClient();
 
@@ -38,7 +37,6 @@ export default async function FeedPage() {
 
   return (
     <div>
-      <BackButton label="Tillbaka till start" />
       <h2 style={{ marginBottom: '2rem', marginTop: '1rem' }}>Mitt Flöde</h2>
 
       {ads.length === 0 ? (

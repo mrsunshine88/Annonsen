@@ -49,7 +49,7 @@ export default async function SkapaAnnonsPage() {
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <BackButton label="Tillbaka" />
+      <BackButton label="Tillbaka till start" href="/" />
       <h1 style={{ marginBottom: "2rem", color: "var(--color-primary)" }}>Skapa Annons</h1>
       <CreateAdForm 
         categories={categories} 
