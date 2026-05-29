@@ -61,9 +61,14 @@ export default function Navbar() {
   return (
     <header className="navbar-header">
       <div className="container navbar-container">
-        <Link href="/" className="navbar-logo" onClick={closeMenu}>
-          Annonsen
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Link href="/" className="navbar-logo" onClick={closeMenu}>
+            Annonsen
+          </Link>
+          <div className="navbar-desktop" style={{ display: 'flex', alignItems: 'center' }}>
+            <Link href="/jobb" className="dashboard-link">JOBB</Link>
+          </div>
+        </div>
 
         {/* Hamburgermeny-knapp för mobil */}
         <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Meny">
@@ -78,12 +83,9 @@ export default function Navbar() {
 
         {/* Skrivbordsmeny */}
         <nav className="navbar-desktop">
-          <Link href="/jobb" className="dashboard-link">JOBB</Link>
           {status === "loading" ? null : session ? (
             <>
-              <Link href="/dashboard/annonser" className="dashboard-link">Mina Annonser</Link>
-              <Link href="/dashboard/favoriter" className="dashboard-link">Favoriter</Link>
-              <Link href="/dashboard/flodet" className="dashboard-link">Flödet</Link>
+              <Link href="/dashboard/annonser" className="dashboard-link">Mina sidor</Link>
               <Link href="/dashboard/meddelanden" className="dashboard-link" style={{ position: 'relative' }}>
                 Meddelanden
                 {unreadCount > 0 && (
@@ -92,16 +94,16 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              <Link href="/dashboard/installningar" className="dashboard-link">Inställningar</Link>
+
               {(session.user as any)?.isAdmin && (
                 <Link href="/admin/konton" className="dashboard-link">Admin</Link>
               )}
               <button onClick={() => signOut({ callbackUrl: '/' })} className="dashboard-link-danger">Logga ut</button>
             </>
           ) : (
-            <Link href="/login" className="btn-secondary">Logga in</Link>
+            <Link href="/login" className="btn-navbar-secondary">Logga in</Link>
           )}
-          <Link href="/skapa" className="btn-primary">
+          <Link href="/skapa" className="btn-navbar-primary">
             {isCompany ? "Företagsannons" : "Skapa annons"}
           </Link>
         </nav>
@@ -123,9 +125,7 @@ export default function Navbar() {
 
           {status === "loading" ? null : session ? (
             <>
-              <Link href="/dashboard/annonser" className="mobile-dropdown-item" onClick={closeMenu}>Mina Annonser</Link>
-              <Link href="/dashboard/favoriter" className="mobile-dropdown-item" onClick={closeMenu}>Favoriter</Link>
-              <Link href="/dashboard/flodet" className="mobile-dropdown-item" onClick={closeMenu}>Flödet</Link>
+              <Link href="/dashboard/annonser" className="mobile-dropdown-item" onClick={closeMenu}>Mina sidor</Link>
               <Link href="/dashboard/meddelanden" className="mobile-dropdown-item" onClick={closeMenu} style={{ display: 'flex', justifyContent: 'space-between' }}>
                 Meddelanden
                 {unreadCount > 0 && (
@@ -134,7 +134,7 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              <Link href="/dashboard/installningar" className="mobile-dropdown-item" onClick={closeMenu}>Inställningar</Link>
+
               {(session.user as any)?.isAdmin && (
                 <Link href="/admin/konton" className="mobile-dropdown-item" onClick={closeMenu}>Admin</Link>
               )}
