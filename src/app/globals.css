@@ -458,4 +458,18 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
   .admin-sidebar {
     width: 100% !important;
   }
+  .admin-nav-desktop {
+    display: none !important;
+  }
+  .admin-nav-mobile {
+    display: block !important;
+  }
+}
+
+.admin-nav-desktop {
+  display: block;
+}
+
+.admin-nav-mobile {
+  display: none;
 }

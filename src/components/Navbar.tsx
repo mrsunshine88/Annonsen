@@ -136,22 +136,7 @@ export default function Navbar() {
               </Link>
               <Link href="/dashboard/installningar" className="mobile-dropdown-item" onClick={closeMenu}>Inställningar</Link>
               {(session.user as any)?.isAdmin && (
-                <div style={{ borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}>
-                  <button onClick={() => setAdminMenuOpen(!adminMenuOpen)} className="mobile-dropdown-item" style={{ fontWeight: 'bold', color: 'var(--color-primary)', width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between' }}>
-                    Admin
-                    <span>{adminMenuOpen ? '▲' : '▼'}</span>
-                  </button>
-                  {adminMenuOpen && (
-                    <div style={{ paddingLeft: '1rem', background: 'rgba(0,0,0,0.02)' }}>
-                      <Link href="/admin/konton" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontSize: '0.95rem' }}>Konton</Link>
-                      <Link href="/admin/annonser" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontSize: '0.95rem' }}>Annonser</Link>
-                      <Link href="/admin/anmalningar" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontSize: '0.95rem' }}>Anmälningar</Link>
-                      <Link href="/admin/foretag" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontSize: '0.95rem' }}>Företag</Link>
-                      <Link href="/admin/arbetsgivare" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontSize: '0.95rem' }}>Arbetsgivare</Link>
-                      <Link href="/admin/installningar" className="mobile-dropdown-item" onClick={closeMenu} style={{ fontSize: '0.95rem' }}>Inställningar</Link>
-                    </div>
-                  )}
-                </div>
+                <Link href="/admin/konton" className="mobile-dropdown-item" onClick={closeMenu}>Admin</Link>
               )}
               <button onClick={() => { closeMenu(); signOut({ callbackUrl: '/' }); }} className="mobile-dropdown-item" style={{ color: 'var(--color-error)', textAlign: "left", width: "100%" }}>Logga ut</button>
             </>
