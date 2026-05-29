@@ -174,6 +174,22 @@ function MessagesContent() {
     }
   };
 
+  const deleteMessage = async (messageId: string) => {
+    if (!confirm("Vill du verkligen radera detta meddelande?")) return;
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        fetchMessages();
+      } else {
+        alert("Kunde inte radera meddelandet.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="container" style={{ padding: "2rem 0" }}>
       <div className="meddelanden-wrapper" style={{ display: "flex", gap: "2rem", height: "75vh" }}>
@@ -237,14 +253,40 @@ function MessagesContent() {
                     <div key={msg.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start" }}>
                       <div style={{ 
                         maxWidth: "70%", 
-                        padding: "0.75rem 1rem", 
-                        borderRadius: isMe ? "var(--radius-md) var(--radius-md) 0 var(--radius-md)" : "var(--radius-md) var(--radius-md) var(--radius-md) 0",
-                        backgroundColor: isMe ? "var(--color-primary)" : "var(--color-border)",
-                        color: isMe ? "white" : "inherit"
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        flexDirection: isMe ? "row" : "row-reverse"
                       }}>
-                        <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
-                        <div style={{ fontSize: "0.7rem", marginTop: "0.5rem", textAlign: "right", opacity: 0.7 }}>
-                          {new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+                        {/* Radera-knapp */}
+                        <button 
+                          onClick={() => deleteMessage(msg.id)}
+                          title="Radera meddelande"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            opacity: 0.5,
+                            fontSize: "1.1rem",
+                            padding: "0.2rem"
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.5")}
+                        >
+                          🗑️
+                        </button>
+                        
+                        <div style={{ 
+                          padding: "0.75rem 1rem", 
+                          borderRadius: isMe ? "var(--radius-md) var(--radius-md) 0 var(--radius-md)" : "var(--radius-md) var(--radius-md) var(--radius-md) 0",
+                          backgroundColor: isMe ? "var(--color-primary)" : "var(--color-border)",
+                          color: isMe ? "white" : "inherit",
+                          flex: 1
+                        }}>
+                          <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
+                          <div style={{ fontSize: "0.7rem", marginTop: "0.5rem", textAlign: "right", opacity: 0.7 }}>
+                            {new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+                          </div>
                         </div>
                       </div>
                     </div>

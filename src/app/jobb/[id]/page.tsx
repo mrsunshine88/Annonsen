@@ -38,9 +38,6 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
       <div className="container" style={{ padding: "4rem 1rem", textAlign: "center" }}>
         <div className="glass-panel" style={{ padding: "4rem 2rem", maxWidth: "600px", margin: "0 auto" }}>
           <h1 style={{ color: "var(--color-primary)", marginBottom: "1rem" }}>Jobbannonsen är inte tillgänglig</h1>
-          <p style={{ color: "var(--color-text-secondary)", fontSize: "1.1rem", lineHeight: 1.6 }}>
-            Denna jobbannons tillhör en arbetsgivare vars konto för närvarande är inaktivt eller väntar på godkännande.
-          </p>
           <div style={{ marginTop: "2rem" }}>
             <Link href="/jobb" className="btn-primary" style={{ padding: "0.8rem 1.5rem", borderRadius: "100px" }}>Tillbaka till jobben</Link>
           </div>
@@ -136,7 +133,7 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
                 )}
               </div>
 
-              {daysLeft >= 0 && (
+              {daysLeft >= 0 && job.authorId !== session?.user?.id && (
                 job.applyUrl ? (
                   <a href={job.applyUrl} rel="noopener noreferrer" className="btn-primary" style={{ display: "block", textAlign: "center", padding: "1rem", fontSize: "1.1rem" }}>
                     Ansök via arbetsgivaren

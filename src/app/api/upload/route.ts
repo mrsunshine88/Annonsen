@@ -28,14 +28,15 @@ export async function POST(req: Request) {
       // Ladda upp till Vercel Blob
       const blob = await put(filename, buffer, {
         access: 'public',
-        token: process.env.BLOB_READ_WRITE_TOKEN // Valfritt men bra för Vercel
+        contentType: file.type || undefined,
+        token: process.env.BLOB_READ_WRITE_TOKEN
       });
       urls.push(blob.url);
     }
 
     return NextResponse.json({ urls }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("UPLOAD ERROR:", error);
-    return NextResponse.json({ error: "Kunde inte ladda upp filerna" }, { status: 500 });
+    return NextResponse.json({ error: `Kunde inte ladda upp filerna: ${error.message}` }, { status: 500 });
   }
 }

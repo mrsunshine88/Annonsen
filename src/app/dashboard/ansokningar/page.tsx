@@ -1,68 +1,92 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
 
-export default function ApplicationsPage() {
-  const { data: session } = useSession();
-  const [applications, setApplications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const prisma = new PrismaClient();
 
-  // For this initial implementation, we'll assume there is an API route 
-  // to fetch applications for the current employer's jobs.
-  // We'll create a basic UI for it now.
+export default async function JobApplicationsPage() {
+  const session: any = await getServerSession(authOptions);
   
-  useEffect(() => {
-    // I a real implementation, you would fetch applications here
-    // fetch('/api/jobb/ansokningar').then(...)
-    setLoading(false);
-  }, []);
+  if (!session?.user?.id) return null;
+
+  const jobAds = await prisma.jobAd.findMany({
+    where: { authorId: session.user.id },
+    include: {
+      applications: {
+        orderBy: { createdAt: 'desc' },
+        include: { applicant: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <div>
-      <h1 style={{ marginBottom: "2rem", color: "var(--color-primary)" }}>Inkomna Ansökningar</h1>
-      <p style={{ color: "var(--color-text-secondary)", marginBottom: "2rem" }}>
-        Här kommer du att kunna se och hantera alla ansökningar som kommit in för dina publicerade jobb. (Data hämtas från API framöver)
-      </p>
+      <h2 style={{ marginBottom: '2rem', marginTop: '1rem', color: 'var(--color-primary)' }}>Mottagna Ansökningar</h2>
 
-      {loading ? (
-        <p>Laddar ansökningar...</p>
-      ) : applications.length === 0 ? (
-        <div className="glass-panel" style={{ padding: "3rem", textAlign: "center" }}>
-          <p style={{ fontSize: "1.1rem", color: "var(--color-text-secondary)" }}>
-            Du har inga inkomna ansökningar ännu.
-          </p>
+      {jobAds.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--color-text-secondary)' }}>
+          <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Du har inte publicerat några jobbannonser ännu.</p>
+          <Link href="/skapa-jobb" className="btn-secondary">Skapa en jobbannons</Link>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {applications.map((app) => (
-            <div key={app.id} className="glass-panel" style={{ padding: "1.5rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {jobAds.map(job => (
+            <div key={job.id} className="glass-panel" style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h3 style={{ margin: 0, color: "var(--color-primary)" }}>{app.name}</h3>
-                  <p style={{ margin: "0.25rem 0", color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>
-                    Ansökte till: <strong>{app.job.title}</strong>
-                  </p>
-                  <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem", fontSize: "0.85rem" }}>
-                    <span>📧 {app.email}</span>
-                    {app.phone && <span>📞 {app.phone}</span>}
-                    <span>📅 {new Date(app.createdAt).toLocaleDateString("sv-SE")}</span>
+                  <h3 style={{ fontSize: '1.3rem', marginBottom: '0.2rem' }}>{job.title}</h3>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+                    Publicerad: {new Date(job.createdAt).toLocaleDateString("sv-SE")} | 
+                    Ansökningar: <strong>{job.applications.length} st</strong>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <a href={app.cvUrl} rel="noreferrer" className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
-                    Visa CV
-                  </a>
-                  <a href={app.coverLetterUrl} rel="noreferrer" className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}>
-                    Visa Personligt Brev
-                  </a>
-                </div>
+                <Link href={`/jobb/${job.id}`} className="btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Visa Annons</Link>
               </div>
-              {app.message && (
-                <div style={{ marginTop: "1rem", padding: "1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", fontSize: "0.9rem" }}>
-                  <strong>Meddelande:</strong><br/>
-                  {app.message}
+
+              {job.applications.length === 0 ? (
+                <div style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>Inga ansökningar ännu.</div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                    <thead>
+                      <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--color-border)' }}>
+                        <th style={{ padding: '0.5rem' }}>Namn</th>
+                        <th style={{ padding: '0.5rem' }}>Datum</th>
+                        <th style={{ padding: '0.5rem' }}>Dokument</th>
+                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>Åtgärd</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {job.applications.map(app => (
+                        <tr key={app.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: '1rem 0.5rem' }}>
+                            <div style={{ fontWeight: 600 }}>{app.name}</div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                              <a href={`mailto:${app.email}`} style={{ color: 'inherit' }}>{app.email}</a>
+                              {app.phone && <span> | {app.phone}</span>}
+                            </div>
+                            {app.message && (
+                              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginTop: '0.5rem', fontStyle: 'italic', maxWidth: '300px' }}>
+                                "{app.message}"
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem 0.5rem', fontSize: '0.9rem' }}>{new Date(app.createdAt).toLocaleDateString("sv-SE")}</td>
+                          <td style={{ padding: '1rem 0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <a href={app.cvUrl} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>📄 CV</a>
+                              <a href={app.coverLetterUrl} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>✉️ Brev</a>
+                            </div>
+                          </td>
+                          <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
+                            <Link href={`/meddelanden`} className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Gå till meddelanden</Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

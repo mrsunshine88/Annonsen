@@ -122,6 +122,8 @@ model Message {
   content   String
   isRead    Boolean  @default(false)
   isJobMessage Boolean @default(false)
+  deletedBySender Boolean @default(false)
+  deletedByReceiver Boolean @default(false)
   createdAt DateTime @default(now())
 
   senderId String

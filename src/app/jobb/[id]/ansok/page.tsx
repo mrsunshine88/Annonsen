@@ -59,22 +59,30 @@ export default function ApplyJobPage({ params }: { params: Promise<{ id: string 
     // Assuming /api/upload supports PDFs
     
     const formData = new FormData();
-    formData.append("files", file);
+    formData.append("files", file, file.name || "upload.file");
 
     try {
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
+      
+      let data;
+      const text = await res.text();
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        throw new Error(`Status ${res.status}: Något gick snett på servern.`);
+      }
+
       if (res.ok && data.urls && data.urls.length > 0) {
         setUrl(data.urls[0]);
       } else {
         showNotification(data.error || "Något gick fel vid uppladdningen. Säkerställ att det är ett giltigt format.", "error");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Upload error", err);
-      showNotification("Något gick fel vid uppladdningen.", "error");
+      showNotification(`Uppladdning misslyckades: ${err.message}`, "error");
     }
   };
 

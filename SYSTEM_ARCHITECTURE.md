@@ -26,7 +26,7 @@ All data definieras i `prisma/schema.prisma`. Relationen är byggd med `onDelete
 - **User:** Kärnan i systemet. Hanterar inloggning (`email`, `password`), roller (`isAdmin`, `isRoot`, `isBlocked`) och kontotyper (`Privat`, `Företag`, `Arbetsgivare`). Innehåller även fält för företagsinformation (ex. `companyName`, `companyOrgNr`).
 - **Category & Ad:** Annonserna. Varje `Ad` tillhör en `Category` (vilka stöder sub-kategorier via `parentId`). Annonsmodellen har både generella fält (pris, titel, ort) och fordonsspecifika fält (miltal, växellåda, m.m.).
 - **JobAd & JobApplication:** En separat tabellstruktur från vanliga annonser för att hålla domänerna rena. `JobAd` innehåller fält som `requirements`, `merits`, `scope`, `deadline`. `JobApplication` sparar CV/Personligt brev-URL:er och kopplar sökanden till jobbannonsen.
-- **Message:** Inbyggd chatt. Varje meddelande har `senderId` och `receiverId`. För att koppla chatten till en specifik kontext finns två *valfria* fält: `adId` (för varuannonser) och `jobAdId` (för platsannonser). Ett boolean-fält `isJobMessage` används för UI-märkning.
+- **Message:** Inbyggd chatt. Varje meddelande har `senderId` och `receiverId`. För att koppla chatten till en specifik kontext finns två *valfria* fält: `adId` (för varuannonser) och `jobAdId` (för platsannonser). Ett boolean-fält `isJobMessage` används för UI-märkning. Meddelanden stöder "ensidig radering" via fälten `deletedBySender` och `deletedByReceiver`, vilket innebär att om ena parten raderar ett meddelande så finns det ändå kvar för den andra.
 - **Settings:** En singleton-modell (id = "default") som håller systeminställningar. Används för prissättning, Swish-inställningar (`swishAlias`, `swishCert`) och aktivering av betalningar.
 - **Favorite, Follow, AdReport:** Modeller för att bokmärka annonser, följa företag/säljare och anmäla opassande annonser till admin. `AdReport` har bland annat ett fält `adminViewed` för att hålla koll på om en notis ska visas för administratörerna.
 
@@ -58,6 +58,10 @@ När en användare loggar in sker en initial omdirigering i `app/page.tsx` och v
 - Layouten i `src/app/dashboard/layout.tsx` anpassar menyn till vänster beroende på `accountType`, så att Arbetsgivare t.ex. inte ser "Dina Annonser" (varor) utan enbart "Dina Jobb". 
 - Företag och Arbetsgivare har en intern länk till "Din Företagssida" (`/dashboard/foretagssida`) där de kan förhandsgranska exakt hur deras butik/profil ser ut för omvärlden utan att lämna systemet. Inga externa fönster (`target="_blank"`) öppnas, allt renderas integrerat.
 
+### 4.6 Följ-systemet och Det Gemensamma Flödet
+Användare kan klicka på "Följ" på både Företag (butiker) och Arbetsgivare. 
+Under `/dashboard/flodet` hämtas sedan både vanliga Varuannonser och Jobbannonser från de konton användaren följer. Algoritmen slår ihop dessa två helt olika datatyper och sorterar dem kronologiskt, vilket ger en modern "social-media"-liknande feed. Jobbannonserna får en specifik visuell "Jobb"-kortdesign för att passa in bland bildtunga varuannonser.
+
 ### 4.5 Admin Notifikationer
 Ett smart notissystem är implementerat för att snabbt uppmärksamma administratörer på nya anmälningar (`AdReport`):
 - När en användare skapar en anmälan sparas den med `adminViewed = false`.
@@ -76,15 +80,15 @@ Ett smart notissystem är implementerat för att snabbt uppmärksamma administra
 ### 5.2 Jobbportalen
 En helt isolerad portal byggd sida-vid-sida med varuannonserna:
 - **Publikt (`/jobb` & `/jobb/[id]`):** Besökare kan söka och läsa platsannonser. *Teknisk detalj:* Dessa sidor använder `export const dynamic = 'force-dynamic';` och awaitar `searchParams` enligt Next.js 15-standard. *Varför?* För att förhindra att Next.js statiskt cachar en tom jobblista. Detta garanterar att sökningarna alltid hämtar dagsfärsk data från databasen.
-- **Ansökan:** (`/jobb/[id]/ansok`) tvingar användaren att ladda upp CV och brev, vilka sedan skapar en `JobApplication` kopplad till annonsen.
-- **Arbetsgivare (`/dashboard/jobb/...`):** Här skapas annonsen. Arbetsgivaren kan se alla inkomna ansökningar i en tabell och ladda ner dokumenten. När de vill gå vidare klickar de "Kontakta i chatt" varpå de skickas till den interna meddelandecentralen. De kan även radera och hantera sina annonser härifrån.
+- **Ansökan:** (`/jobb/[id]/ansok`) Användaren måste ladda upp CV och brev, vilka sedan skapar en `JobApplication` kopplad till annonsen. Tidigare skickades ansökningar in som chattmeddelanden, men för att inte skräpa ner inkorgen sparas de nu **enbart** som ansökningar i databasen. För att hantera problem med mobila uppladdningar (där t.ex. iPhone strippar filändelser för `.docx`) lyssnar backend på filens MIME-typ istället för enbart filändelsen vid uppladdning till Vercel Blob.
+- **Arbetsgivare (`/dashboard/ansokningar`):** Här ser arbetsgivaren alla inkomna ansökningar strukturerat per jobb. Arbetsgivaren kan ladda ner dokumenten (PDF/Word), och när de vill gå vidare klickar de "Gå till meddelanden" för att starta en separat, renodlad konversation med sökanden i chatten. De kan även radera och hantera sina annonser från Jobb-dashboarden.
 
 ### 5.3 Meddelandesystem (Chatt)
 Chatten (`/dashboard/meddelanden`) bygger på en kombination av realtidsuppdateringar och HTTP-anrop för notiser:
 - **Arkitektur:** När ett meddelande skickas via `POST /api/messages` sparas det i databasen. UI:t sorterar in meddelandena i en `Map` baserat på konversation (kombination av `annons-ID` och `motpartens ID`). 
 - **Notiser:** I `Navbar` ligger en lättviktig polling var 10:e sekund mot `/api/auth/status` som räknar `unreadCount` och visar en liten notis-bubbla i huvudmenyn om man fått nya svar.
 - **Realtid (Supabase):** Inne på själva meddelandesidan är all "ful-polling" borttagen för att spara på klientens CPU och serverns resurser. Istället används `@supabase/supabase-js` och WebSockets för att enbart lyssna på `INSERT`-events i tabellen `Message`. När ett nytt meddelande anländer renderas det direkt.
-- **Jobb-integration:** Jobbansökningar triggar automatiskt ett första chattmeddelande (som markerats med `isJobMessage`). Detta visas i chatten med en tydlig "JOBB"-tagg, så företag inte blandar ihop jobbansökningar med frågor om en begagnad soffa.
+- **Integritet och Radering:** Användare har möjlighet att radera specifika meddelanden inuti en konversation (via en papperskorg-ikon). API:et (`DELETE /api/messages/[id]`) sätter då användarens raderings-flagga (`deletedBySender` eller `deletedByReceiver`) till sant. Om *båda* användarna har raderat meddelandet, tar backend-systemet permanent bort raden från databasen för att spara lagringsutrymme.
 
 ### 5.4 Inställningar och Swish (Betalning)
 Vi har byggt grunden för dynamiska betalningar:
@@ -132,7 +136,7 @@ Ett stort fokus har lagts på att optimera applikationens svarstider och datahan
 
 ## 9. Framtida Utveckling / Att Tänka På
 - **Swish Integration:** Backend-rutterna för prishantering finns klara. För nästa steg behövs Swish e-handels-certifikat, vilka läggs in i `Settings`. En webhook (`/api/payments/webhook`) bör byggas för att asynkront ta emot "Betald"-bekräftelsen från Swish och ändra `isPaid` till `true`.
-- **Bildhantering:** Just nu emuleras filuppladdning i `/api/upload`. För produktionsmiljö behöver ni koppla denna route till en AWS S3-bucket, Supabase Storage eller Cloudinary för att hantera bilder och CV-filer.
+- **Bildhantering & Uppladdningar:** Bilduppladdningar och dokumentuppladdningar (CV/Brev) hanteras fullt ut med **Vercel Blob** (`@vercel/blob`). Den asynkrona backend-routen `/api/upload` genererar unika UUID-filnamn och sparar dem säkert i molnet. Den hanterar även fallback för filtyper ifall mobila webbläsare strippar `.docx` eller `.pdf` från filnamnet.
 - **Email:** Det finns inga e-postutskick för återställning av lösenord. Integration mot t.ex. Resend eller SendGrid rekommenderas.
 
 Detta system är 100% dynamiskt och byggt för att enkelt kunna skalas upp både horisontellt (Next.js serverless) och vertikalt (PostgreSQL)!

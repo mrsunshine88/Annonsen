@@ -25,6 +25,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Saknar obligatoriska fält" }, { status: 400 });
     }
 
+    if (session?.user?.id === job.authorId) {
+      return NextResponse.json({ error: "Du kan inte ansöka till din egen jobbannons" }, { status: 400 });
+    }
+
     // Skapa JobApplication
     const applicationData: any = {
       name,
@@ -44,19 +48,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const application = await prisma.jobApplication.create({
       data: applicationData
-    });
-
-    // Skapa ett meddelande-tråd till arbetsgivaren
-    const messageContent = `[NY ANSÖKAN]\nNamn: ${name}\nE-post: ${email}\nTelefon: ${phone || 'Ej angivet'}\n\nMeddelande:\n${message || 'Inget meddelande'}\n\nCV: ${cvUrl}\nPersonligt brev: ${coverLetterUrl}`;
-
-    await prisma.message.create({
-      data: {
-        content: messageContent,
-        senderId: session.user.id,
-        receiverId: job.authorId,
-        isJobMessage: true, // Markerad som jobbmeddelande
-        jobAdId: job.id, // Vi använder nu den nya kolumnen jobAdId
-      }
     });
 
     return NextResponse.json({ success: true, applicationId: application.id });
