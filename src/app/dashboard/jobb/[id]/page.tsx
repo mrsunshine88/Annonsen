@@ -9,7 +9,8 @@ export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
 
-export default async function EditJobPage({ params }: { params: { id: string } }) {
+export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const session: any = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -17,7 +18,7 @@ export default async function EditJobPage({ params }: { params: { id: string } }
   }
 
   const job = await prisma.jobAd.findUnique({
-    where: { id: params.id }
+    where: { id: resolvedParams.id }
   });
 
   if (!job) {

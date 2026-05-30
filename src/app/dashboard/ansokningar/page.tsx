@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import HandleApplicationButton from "./HandleApplicationButton";
 
 const prisma = new PrismaClient();
 
@@ -36,7 +37,7 @@ export default async function JobApplicationsPage() {
             <div key={job.id} className="glass-panel" style={{ padding: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h3 style={{ fontSize: '1.3rem', marginBottom: '0.2rem' }}>{job.title}</h3>
+                  <h3 style={{ fontSize: '1.3rem', marginBottom: '0.2rem' }}>Jobbannons: {job.title}</h3>
                   <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
                     Publicerad: {new Date(job.createdAt).toLocaleDateString("sv-SE")} | 
                     Ansökningar: <strong>{job.applications.length} st</strong>
@@ -60,9 +61,18 @@ export default async function JobApplicationsPage() {
                     </thead>
                     <tbody>
                       {job.applications.map(app => (
-                        <tr key={app.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <tr key={app.id} style={{ 
+                          borderBottom: '1px solid var(--color-border)',
+                          backgroundColor: app.status === "Hanterad" ? "rgba(0,0,0,0.02)" : "transparent",
+                          opacity: app.status === "Hanterad" ? 0.8 : 1
+                        }}>
                           <td style={{ padding: '1rem 0.5rem' }}>
-                            <div style={{ fontWeight: 600 }}>{app.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                              <div style={{ fontWeight: 600 }}>{app.name}</div>
+                              {app.status === "Hanterad" && (
+                                <span style={{ fontSize: '0.7rem', backgroundColor: 'var(--color-border)', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)' }}>Hanterad</span>
+                              )}
+                            </div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
                               <a href={`mailto:${app.email}`} style={{ color: 'inherit' }}>{app.email}</a>
                               {app.phone && <span> | {app.phone}</span>}
@@ -81,7 +91,10 @@ export default async function JobApplicationsPage() {
                             </div>
                           </td>
                           <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
-                            <Link href={`/meddelanden?newChat=true&adId=${job.id}&isJob=true&applicantId=${app.applicantId}&applicantName=${encodeURIComponent(app.name)}`} className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Gå till meddelanden</Link>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                              <Link href={`/meddelanden?newChat=true&adId=${job.id}&isJob=true&applicantId=${app.applicantId}&applicantName=${encodeURIComponent(app.name)}`} className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Skriv meddelande</Link>
+                              <HandleApplicationButton applicationId={app.id} currentStatus={app.status} />
+                            </div>
                           </td>
                         </tr>
                       ))}
