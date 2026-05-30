@@ -206,6 +206,7 @@ model JobAd {
   location        String   // Plats eller "Distans"
   scope           String   // Heltid, deltid, extrajobb, projekt
   duration        String   // Tillsvidare, vikariat osv.
+  vacancies       Int      @default(1) // Antal platser
   
   description     String   // Fritext
   requirements    String   // Ska-krav

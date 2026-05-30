@@ -81,7 +81,7 @@ export default async function JobApplicationsPage() {
                             </div>
                           </td>
                           <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
-                            <Link href={`/meddelanden`} className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Gå till meddelanden</Link>
+                            <Link href={`/meddelanden?newChat=true&adId=${job.id}&isJob=true&applicantId=${app.applicantId}&applicantName=${encodeURIComponent(app.name)}`} className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Gå till meddelanden</Link>
                           </td>
                         </tr>
                       ))}

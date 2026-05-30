@@ -77,6 +77,7 @@ export default async function JobAdPage({ params }: { params: Promise<{ id: stri
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>📍 {job.location}</span>
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>🕒 {job.scope}</span>
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>📅 {job.duration}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>👥 {job.vacancies} plats{job.vacancies !== 1 ? 'er' : ''}</span>
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>🏷️ {job.industry}</span>
           </div>
         </div>

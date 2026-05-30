@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const { 
-      title, industry, location, scope, duration, description, 
+      title, industry, location, scope, duration, vacancies, description, 
       requirements, merits, deadline, applyUrl, contactPerson, contactEmail, contactPhone, hideContactPhone
     } = body;
 
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
         location,
         scope,
         duration,
+        vacancies: vacancies ? parseInt(vacancies, 10) : 1,
         description,
         requirements,
         merits: merits || null,
@@ -70,7 +71,7 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const { 
-      id, title, industry, location, scope, duration, description, 
+      id, title, industry, location, scope, duration, vacancies, description, 
       requirements, merits, deadline, applyUrl, contactPerson, contactEmail, contactPhone, hideContactPhone
     } = body;
 
@@ -96,6 +97,7 @@ export async function PUT(req: Request) {
         location,
         scope,
         duration,
+        vacancies: vacancies ? parseInt(vacancies, 10) : 1,
         description,
         requirements,
         merits: merits || null,

@@ -8,7 +8,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const job = await prisma.jobAd.findUnique({
       where: { id: resolvedParams.id },
-      select: { title: true, companyName: true, applyUrl: true, authorId: true }
+      select: { id: true, title: true, companyName: true, applyUrl: true, authorId: true }
     });
 
     if (!job) {

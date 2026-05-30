@@ -15,6 +15,9 @@ function MessagesContent() {
   const searchParams = useSearchParams();
   const preselectAdId = searchParams.get("adId");
   const isNewChat = searchParams.get("newChat") === "true";
+  const isJobParam = searchParams.get("isJob") === "true";
+  const applicantId = searchParams.get("applicantId");
+  const applicantName = searchParams.get("applicantName");
 
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +26,7 @@ function MessagesContent() {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [newChatAdData, setNewChatAdData] = useState<any>(null);
+  const [newChatOtherUser, setNewChatOtherUser] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -43,17 +47,28 @@ function MessagesContent() {
       // Om vi kom hit via "Skicka Meddelande" och vill skapa en ny chatt
       if (isNewChat && preselectAdId && loggedInUser) {
         // Kontrollera om konversationen redan existerar
-        const existingMsg = data.find((m: any) => m.adId === preselectAdId);
+        const existingMsg = data.find((m: any) => {
+          if (isJobParam) {
+            return m.jobAdId === preselectAdId && (applicantId ? (m.senderId === applicantId || m.receiverId === applicantId) : true);
+          } else {
+            return m.adId === preselectAdId;
+          }
+        });
         
         if (existingMsg) {
           const otherUserId = existingMsg.senderId === loggedInUser ? existingMsg.receiverId : existingMsg.senderId;
-          setSelectedChat(`${preselectAdId}_${otherUserId}`);
+          setSelectedChat(`${isJobParam ? 'job_' : 'ad_'}${preselectAdId}_${otherUserId}`);
         } else {
           // Konversationen finns inte, hämta annonsdata
-          const adRes = await fetch(`/api/ads/single?id=${preselectAdId}`);
+          const adRes = await fetch(isJobParam ? `/api/jobb/${preselectAdId}` : `/api/ads/single?id=${preselectAdId}`);
           if (adRes.ok) {
             const adData = await adRes.json();
             setNewChatAdData(adData);
+            if (isJobParam && applicantId && applicantName) {
+              setNewChatOtherUser({ id: applicantId, name: applicantName });
+            } else {
+              setNewChatOtherUser(adData.author);
+            }
             setSelectedChat(`new_${preselectAdId}`);
           }
         }
@@ -128,12 +143,11 @@ function MessagesContent() {
   });
 
   // Lägg till den temporära nya chatten i mapen om vi har den
-  if (newChatAdData && selectedChat === `new_${preselectAdId}`) {
-    const seller = newChatAdData.author;
+  if (newChatAdData && selectedChat === `new_${preselectAdId}` && newChatOtherUser) {
     conversationsMap.set(`new_${preselectAdId}`, {
       ad: newChatAdData,
-      isJob: false,
-      otherUser: { ...seller, name: seller.accountType === "Företag" ? seller.companyName : seller.name },
+      isJob: isJobParam,
+      otherUser: { ...newChatOtherUser, name: newChatOtherUser.accountType === "Företag" ? newChatOtherUser.companyName : newChatOtherUser.name },
       messages: [],
       lastUpdated: new Date()
     });
@@ -164,8 +178,9 @@ function MessagesContent() {
         setReplyContent("");
         // Efter första meddelandet i en ny chatt byter vi till den riktiga chatt-nyckeln
         if (selectedChat === `new_${preselectAdId}`) {
-          setSelectedChat(`${activeChatData.ad.id}_${activeChatData.otherUser.id}`);
+          setSelectedChat(`${activeChatData.isJob ? 'job_' : 'ad_'}${activeChatData.ad.id}_${activeChatData.otherUser.id}`);
           setNewChatAdData(null);
+          setNewChatOtherUser(null);
         }
         fetchMessages();
       }

@@ -14,6 +14,7 @@ export default function CreateJobForm({ settings, initialData, isEdit = false }:
     location: initialData?.location || "",
     scope: initialData?.scope || "Heltid",
     duration: initialData?.duration || "Tillsvidare",
+    vacancies: initialData?.vacancies || 1,
     description: initialData?.description || "",
     requirements: initialData?.requirements || "",
     merits: initialData?.merits || "",
@@ -107,6 +108,11 @@ export default function CreateJobForm({ settings, initialData, isEdit = false }:
             <option value="Praktik">Praktik</option>
           </select>
         </div>
+      </div>
+
+      <div>
+        <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Antal platser *</label>
+        <input required type="number" min="1" name="vacancies" value={formData.vacancies} onChange={handleChange} className="input-field" placeholder="1" />
       </div>
 
       <div>
