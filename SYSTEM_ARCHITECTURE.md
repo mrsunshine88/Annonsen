@@ -95,12 +95,20 @@ Chatten (`/dashboard/meddelanden`) bygger på en sofistikerad kombination av dat
 - **Läst/Oläst-status (Read Receipts):** Modellen använder fältet `readAt DateTime?`. När en användare öppnar en chatt med olästa meddelanden anropas routen `/api/messages/mark-read`. *Varför är det robust?* API:et använder Prisma's `updateMany` för att med ett enda optimerat anrop stämpla nuvarande tid på alla olästa rader samtidigt. Därefter skjuts en nätverkssignal (`read`) ut via WebSockets, vilket gör att avsändaren, om de sitter och kollar på skärmen, omedelbart ser texten ändras från "✓ Levererat" till "Läst hh:mm".
 - **Integritet och Radering:** Användare har möjlighet att radera specifika meddelanden inuti en konversation (via en papperskorg-ikon). API:et (`DELETE /api/messages/[id]`) sätter då användarens raderings-flagga (`deletedBySender` eller `deletedByReceiver`) till sant. Om *båda* användarna har raderat meddelandet, tar backend-systemet permanent bort raden från databasen för att spara lagringsutrymme.
 
-### 5.4 Inställningar och Swish (Betalning)
-Vi har byggt ett fullt fungerande system för dynamiska betalningar med Enterprise-säkerhet:
-- `Settings`-modellen tillåter admin att sätta ett standardpris per annons.
-- Företag och Arbetsgivare har egna specifika fält (både för abonnemang och annonser). Systemet stöder också individuella "custom"-priser på användarnivå som trumfar de globala företagspriserna.
-- Admin kan slå på/av betalningskrav. Vid aktivering måste användare betala innan annonsen får `isPaid = true`.
-- **Swish Integration:** Är nu fullt utbyggd med dubbla API-rutter. Routen `/api/payments/swish` agerar initierare och hämtar rätt prisnivå för användaren innan den kontaktar banken. Routen `/api/payments/webhook` lyssnar asynkront efter bekräftelser från banken. *Varför är det robust?* Webhooken använder `prisma.$transaction` (ACID) för att både spara ner ett kvitto i den dedikerade `Transaction`-tabellen OCH ändra annonsen till betald på exakt samma sekund. Den bygger också in ett stenhårt idempotens-skydd via det unika fältet `swishReference`; om bankens servrar laggar och skickar dubbla "Betald"-notiser, blockerar vår databas detta direkt för att skydda ekonomin.
+### 5.4 Inställningar, Swish och Stripe B2B (Betalning)
+Betalningsflödet är helt dynamiskt och konfigureras i adminpanelen (`/admin/kostnad`). 
+
+#### Swish för Privatpersoner
+- **Global Aktivering:** Om en admin stänger av `paymentsEnabled` blir alla nya annonser omedelbart gratis (isPaid = true) för alla användare.
+- **Swish Integration:** Swish-betalningar är helt integrerade med Merchant API via `/api/payments/swish` och webhooken `/api/payments/webhook`. Denna process utnyttjar en idempotent databasmodell (`Transaction` med unikt `swishReference`) för att garantera att dubbelbetalningar är omöjliga.
+
+#### Stripe för B2B (Företag och Arbetsgivare)
+För företagskonton används **Stripe Usage-based (Metered) Billing** för att eliminera manuell fakturering. Detta hanteras i följande steg:
+1. **Kund och Abonnemang:** I `User`-modellen sparas `stripeCustomerId` och `stripeSubscriptionItemId`.
+2. **Onboarding:** En företagskund startar prenumerationen via `/api/payments/create-checkout-session` vilket direkt genererar en Stripe Checkout Session (med fallback-mock om nycklar saknas).
+3. **Metered Billing:** När företaget skapar en ny annons eller jobbannons (`/api/ads`, `/api/jobb`), och om annonspriset är > 0, registreras annonsen omedelbart som `isPaid = true` lokalt, samtidigt som ett `usage record` trycks upp till Stripe. Stripe samlar dessa och drar allt på slutet av månaden.
+4. **Gratis-perioder:** Om admin har ställt in priset för företagsannonser till 0 kr, ignorerar backend-koden Stripe helt och hållet för de annonserna. Detta låter systemet köras helt gratis i början innan man skruvar upp prislappen.
+5. **Auto-avstängning (Webhooks):** Den dygnet-runt-vakande `/api/payments/stripe-webhook` lyssnar efter `invoice.payment_failed` och `invoice.payment_succeeded`. Om ett företagskort studsar, sätter systemet automatiskt `canPublishAds = false` och döljer alla annonser fram tills fakturan är betald, utan manuell intervention från admin.
 
 ### 5.5 E-post och Transaktionell Kommunikation
 Plattformen använder **Resend** (branschstandard för Next.js) via en isolerad centraltjänst i `src/lib/email.ts`. För att underlätta utveckling finns en smart fallback-logik: Om `RESEND_API_KEY` saknas i miljövariablerna, så "skickas" mejlet ut som en tydlig logg i terminalen istället för att krascha systemet. HTML-mallarna är skrivna i ren Vanilla-kod med inline-CSS som matchar "Glassmorphism"-designen.

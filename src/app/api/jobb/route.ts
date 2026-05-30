@@ -32,6 +32,25 @@ export async function POST(req: Request) {
       requirements, merits, deadline, applyUrl, contactPerson, contactEmail, contactPhone, hideContactPhone
     } = body;
 
+    // Stripe B2B logik för Jobb
+    const settings = await prisma.settings.findUnique({ where: { id: "default" } });
+    let paymentAmount = user.customEmployerAdPrice !== null && user.customEmployerAdPrice !== undefined 
+      ? user.customEmployerAdPrice 
+      : (settings?.employerAdPrice || 0);
+
+    let meteredBillingApplied = false;
+    let isPaid = true;
+
+    if (settings?.paymentsEnabled) {
+       isPaid = paymentAmount === 0; // Gratis om priset är 0
+
+       if (user.hasActiveSubscription && user.stripeSubscriptionItemId && paymentAmount > 0) {
+           meteredBillingApplied = true;
+           isPaid = true; // Faktureras av Stripe i efterskott
+           paymentAmount = 0; // Inget Swish-belopp
+       }
+    }
+
     const job = await prisma.jobAd.create({
       data: {
         title,
@@ -50,11 +69,24 @@ export async function POST(req: Request) {
         contactPhone: contactPhone || null,
         hideContactPhone: hideContactPhone || false,
         companyName: session.user.companyName || session.user.name || "Arbetsgivare",
-        authorId: session.user.id
+        authorId: session.user.id,
+        isPaid
       }
     });
 
-    return NextResponse.json(job, { status: 201 });
+    if (meteredBillingApplied && user.stripeSubscriptionItemId) {
+      try {
+        const { stripe } = await import("@/lib/stripe");
+        await (stripe.subscriptionItems as any).createUsageRecord(
+          user.stripeSubscriptionItemId,
+          { quantity: 1, timestamp: Math.floor(Date.now() / 1000) }
+        );
+      } catch (stripeError) {
+        console.error("Stripe Metered Billing Error (Job):", stripeError);
+      }
+    }
+
+    return NextResponse.json({ ...job, paymentAmount }, { status: 201 });
   } catch (error) {
     console.error("Jobb skapande fel:", error);
     return NextResponse.json({ error: "Gick inte att skapa jobbannonsen" }, { status: 500 });

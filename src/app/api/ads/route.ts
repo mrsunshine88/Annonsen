@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     
     let isPaid = true;
     let paymentAmount = 0;
+    let meteredBillingApplied = false;
 
     if (settings?.paymentsEnabled) {
       isPaid = false;
@@ -48,13 +49,20 @@ export async function POST(req: Request) {
         paymentAmount = user.customCompanyAdPrice !== null && user.customCompanyAdPrice !== undefined 
           ? user.customCompanyAdPrice 
           : (settings.companyAdPrice || 0);
+
+        // Om företaget har aktiv Stripe-prenumeration hanteras kostnaden som Metered Billing
+        if (user.hasActiveSubscription && user.stripeSubscriptionItemId && paymentAmount > 0) {
+           meteredBillingApplied = true;
+           isPaid = true; // Faktureras av Stripe i efterskott
+           paymentAmount = 0; // Inget Swish-belopp
+        }
       } else {
         paymentAmount = category?.customPrice !== null && category?.customPrice !== undefined 
           ? category.customPrice 
           : (settings.defaultAdPrice || 0);
       }
       
-      if (paymentAmount === 0) {
+      if (paymentAmount === 0 && !meteredBillingApplied) {
         isPaid = true; // Gratis
       }
     }
@@ -86,6 +94,18 @@ export async function POST(req: Request) {
         drivetrain: drivetrain || null,
       }
     });
+
+    if (meteredBillingApplied && user.stripeSubscriptionItemId) {
+      try {
+        const { stripe } = await import("@/lib/stripe");
+        await (stripe.subscriptionItems as any).createUsageRecord(
+          user.stripeSubscriptionItemId,
+          { quantity: 1, timestamp: Math.floor(Date.now() / 1000) }
+        );
+      } catch (stripeError) {
+        console.error("Stripe Metered Billing Error:", stripeError);
+      }
+    }
 
     return NextResponse.json({ ...ad, paymentAmount }, { status: 201 });
   } catch (error: any) {

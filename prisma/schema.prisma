@@ -44,6 +44,12 @@ model User {
   customEmployerAdPrice           Int?
   customEmployerSubscriptionPrice Int?
 
+  // Stripe B2B Fakturering
+  stripeCustomerId               String?  @unique
+  stripeSubscriptionId           String?
+  stripeSubscriptionItemId       String?  // För metered billing
+  hasActiveSubscription          Boolean  @default(false)
+
   ads              Ad[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
