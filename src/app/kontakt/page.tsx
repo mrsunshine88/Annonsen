@@ -55,7 +55,7 @@ export default function KontaktPage() {
             <label style={{ fontWeight: 500 }}>Namn *</label>
             <input 
               type="text" 
-              className="form-input" 
+              className="input-field" 
               placeholder="Ditt fullständiga namn"
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -67,7 +67,7 @@ export default function KontaktPage() {
             <label style={{ fontWeight: 500 }}>E-post *</label>
             <input 
               type="email" 
-              className="form-input" 
+              className="input-field" 
               placeholder="din@epost.se"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -79,7 +79,7 @@ export default function KontaktPage() {
             <label style={{ fontWeight: 500 }}>Telefonnummer</label>
             <input 
               type="tel" 
-              className="form-input" 
+              className="input-field" 
               placeholder="Frivilligt, om du vill bli uppringd"
               value={formData.phone}
               onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -89,7 +89,7 @@ export default function KontaktPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             <label style={{ fontWeight: 500 }}>Meddelande *</label>
             <textarea 
-              className="form-input" 
+              className="input-field" 
               placeholder="Hur kan vi hjälpa dig?"
               rows={5}
               value={formData.message}
@@ -99,7 +99,7 @@ export default function KontaktPage() {
             />
           </div>
 
-          <button type="submit" className="primary-btn" disabled={loading} style={{ marginTop: "1rem" }}>
+          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: "1rem" }}>
             {loading ? "Skickar..." : "Skicka meddelande"}
           </button>
         </form>

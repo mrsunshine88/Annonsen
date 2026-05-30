@@ -30,19 +30,19 @@ export default function Footer() {
 
           <div style={{ flex: "1 1 200px" }}>
             <h4 style={{ margin: "0 0 1rem 0", color: "var(--color-text)", fontSize: "1.1rem" }}>Länkar</h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <li><Link href="/" style={{ color: "inherit", textDecoration: "none" }}>Sök Annonser</Link></li>
-              <li><Link href="/jobb" style={{ color: "inherit", textDecoration: "none" }}>Lediga Jobb</Link></li>
-              <li><Link href="/kontakt" style={{ color: "inherit", textDecoration: "none" }}>Kontakta Oss</Link></li>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-start" }}>
+              <li><Link href="/" className="dashboard-link" style={{ display: "inline-block" }}>Sök Annonser</Link></li>
+              <li><Link href="/jobb" className="dashboard-link" style={{ display: "inline-block" }}>Lediga Jobb</Link></li>
+              <li><Link href="/kontakt" className="dashboard-link" style={{ display: "inline-block" }}>Kontakta Oss</Link></li>
             </ul>
           </div>
 
           <div style={{ flex: "1 1 200px" }}>
             <h4 style={{ margin: "0 0 1rem 0", color: "var(--color-text)", fontSize: "1.1rem" }}>Information</h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <li><Link href="/villkor" style={{ color: "inherit", textDecoration: "none" }}>Användarvillkor</Link></li>
-              <li><Link href="/integritet" style={{ color: "inherit", textDecoration: "none" }}>Integritetspolicy (GDPR)</Link></li>
-              <li><Link href="/cookies" style={{ color: "inherit", textDecoration: "none" }}>Cookiepolicy</Link></li>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-start" }}>
+              <li><Link href="/villkor" className="dashboard-link" style={{ display: "inline-block" }}>Användarvillkor</Link></li>
+              <li><Link href="/integritet" className="dashboard-link" style={{ display: "inline-block" }}>Integritetspolicy (GDPR)</Link></li>
+              <li><Link href="/cookies" className="dashboard-link" style={{ display: "inline-block" }}>Cookiepolicy</Link></li>
             </ul>
           </div>
         </div>

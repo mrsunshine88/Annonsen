@@ -62,7 +62,7 @@ export default function TermsModal() {
           För att fortsätta använda Annonsen.se måste du läsa och godkänna våra uppdaterade villkor. Detta är ett krav enligt svensk lagstiftning (GDPR) för att vi ska kunna skydda dina personuppgifter.
         </p>
 
-        <div style={{ padding: "1rem", backgroundColor: "var(--color-bg)", borderRadius: "8px", border: "1px solid var(--color-border)" }}>
+        <div className="premium-hover" style={{ padding: "1.25rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "12px", border: "1px solid var(--color-border)" }}>
           <label style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", cursor: "pointer" }}>
             <input 
               type="checkbox" 
@@ -79,7 +79,7 @@ export default function TermsModal() {
         <button 
           onClick={handleAccept} 
           disabled={!accepted || loading}
-          className="primary-btn" 
+          className="btn-primary" 
           style={{ 
             width: "100%", 
             opacity: (!accepted || loading) ? 0.5 : 1,
