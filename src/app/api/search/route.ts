@@ -41,24 +41,7 @@ export async function GET(req: Request) {
     const queryNum = parseInt(query);
     const isQueryNum = !isNaN(queryNum) && query.trim() !== "";
 
-    let textSearchOr: any = undefined;
-    if (query) {
-      textSearchOr = [
-        { title: { contains: query, mode: 'insensitive' } },
-        { description: { contains: query, mode: 'insensitive' } },
-        { brand: { contains: query, mode: 'insensitive' } },
-        { model: { contains: query, mode: 'insensitive' } },
-        { fuel: { contains: query, mode: 'insensitive' } },
-        { gearbox: { contains: query, mode: 'insensitive' } },
-        { color: { contains: query, mode: 'insensitive' } }
-      ];
-      if (isQueryNum) {
-        textSearchOr.push({ year: queryNum });
-        textSearchOr.push({ price: queryNum }); // Fallback om nån söker på exakt pris
-      }
-    }
-
-    const whereClause: any = {
+    let whereClause: any = {
       author: {
         OR: [
           { accountType: "Privat" },
@@ -86,9 +69,27 @@ export async function GET(req: Request) {
       })
     };
 
-    if (textSearchOr) {
-      whereClause.OR = textSearchOr;
+    if (query) {
+      const words = query.trim().split(/\s+/).filter(w => w.length > 0);
+      if (words.length > 0) {
+        whereClause.AND = words.map(word => {
+          const wordOr: any = [
+            { title: { contains: word, mode: 'insensitive' } },
+            { brand: { contains: word, mode: 'insensitive' } },
+            { model: { contains: word, mode: 'insensitive' } },
+          ];
+          
+          // Om ordet är ett nummer, lägg till sökning på årtal
+          if (!isNaN(parseInt(word))) {
+            wordOr.push({ year: parseInt(word) });
+          }
+          
+          return { OR: wordOr };
+        });
+      }
     }
+
+    // whereClause är nu komplett med AND/OR för sökningen
 
     const skip = (page - 1) * limit;
 

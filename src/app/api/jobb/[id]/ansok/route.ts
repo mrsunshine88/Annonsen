@@ -14,7 +14,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { name, email, phone, message, cvUrl, coverLetterUrl } = body;
 
     const job = await prisma.jobAd.findUnique({
-      where: { id: resolvedParams.id }
+      where: { id: resolvedParams.id },
+      include: { author: true }
     });
 
     if (!job) {
@@ -48,6 +49,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const application = await prisma.jobApplication.create({
       data: applicationData
+    });
+
+    // Skicka e-post till arbetsgivaren i bakgrunden (vi väntar inte på den)
+    import("@/lib/email").then(({ sendJobApplicationEmail }) => {
+      sendJobApplicationEmail(job.author.email, job.title, name, email).catch(e => console.error("Email error:", e));
     });
 
     return NextResponse.json({ success: true, applicationId: application.id });

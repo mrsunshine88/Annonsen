@@ -28,6 +28,12 @@ function MessagesContent() {
   const [newChatAdData, setNewChatAdData] = useState<any>(null);
   const [newChatOtherUser, setNewChatOtherUser] = useState<any>(null);
   
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingIndicator, setTypingIndicator] = useState<string | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const localTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const chatChannelRef = useRef<any>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = async () => {
@@ -82,28 +88,40 @@ function MessagesContent() {
 
   useEffect(() => {
     fetchMessages();
-    
-    // Sätt upp Supabase Realtime om nycklar finns
-    let channel: any;
-    if (supabase) {
-      channel = supabase
-        .channel('public:Message')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'Message' },
-          (payload) => {
-            // När ett nytt meddelande skapas i databasen, hämta alla meddelanden igen
-            // (Eller lägg till i state manuellt, men fetchMessages är enklast för att få med relationer)
-            fetchMessages();
-          }
-        )
-        .subscribe();
-    }
-    return () => {
-      if (channel) supabase?.removeChannel(channel);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!supabase || !currentUser) return;
+    
+    const dbChannel = supabase.channel('public:Message')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Message' }, () => fetchMessages())
+      .subscribe();
+
+    const presenceChannel = supabase.channel('chat_presence')
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload.receiverId === currentUser && payload.payload.isTyping) {
+          setTypingIndicator(payload.payload.name);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setTypingIndicator(null), 4000);
+        } else if (payload.payload.receiverId === currentUser && !payload.payload.isTyping) {
+          setTypingIndicator(null);
+        }
+      })
+      .on('broadcast', { event: 'read' }, (payload) => {
+        if (payload.payload.senderId === currentUser) {
+          fetchMessages();
+        }
+      })
+      .subscribe();
+      
+    chatChannelRef.current = presenceChannel;
+
+    return () => {
+      supabase.removeChannel(dbChannel);
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -158,6 +176,31 @@ function MessagesContent() {
 
   const activeChatData = selectedChat ? conversationsMap.get(selectedChat) : null;
 
+  // Markera meddelanden som lästa när vi har chatten öppen
+  useEffect(() => {
+    if (activeChatData && currentUser) {
+      const hasUnread = activeChatData.messages.some((m: any) => m.receiverId === currentUser && !m.readAt);
+      if (hasUnread) {
+        fetch("/api/messages/mark-read", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ adId: activeChatData.ad.id, counterPartId: activeChatData.otherUser.id })
+        }).then(res => {
+          if (res.ok) {
+            fetchMessages();
+            if (chatChannelRef.current) {
+              chatChannelRef.current.send({
+                type: 'broadcast',
+                event: 'read',
+                payload: { senderId: activeChatData.otherUser.id, receiverId: currentUser }
+              });
+            }
+          }
+        });
+      }
+    }
+  }, [selectedChat, messages, currentUser]);
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!replyContent.trim() || !activeChatData) return;
@@ -176,6 +219,14 @@ function MessagesContent() {
       });
       if (res.ok) {
         setReplyContent("");
+        setIsTyping(false);
+        if (chatChannelRef.current) {
+          chatChannelRef.current.send({
+            type: 'broadcast',
+            event: 'typing',
+            payload: { isTyping: false, senderId: currentUser, receiverId: activeChatData.otherUser.id }
+          });
+        }
         // Efter första meddelandet i en ny chatt byter vi till den riktiga chatt-nyckeln
         if (selectedChat === `new_${preselectAdId}`) {
           setSelectedChat(`${activeChatData.isJob ? 'job_' : 'ad_'}${activeChatData.ad.id}_${activeChatData.otherUser.id}`);
@@ -187,6 +238,31 @@ function MessagesContent() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setReplyContent(e.target.value);
+    
+    if (!activeChatData || !chatChannelRef.current || !currentUser) return;
+    
+    if (!isTyping) {
+      setIsTyping(true);
+      chatChannelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { isTyping: true, senderId: currentUser, receiverId: activeChatData.otherUser.id, name: 'Motparten' }
+      });
+    }
+
+    if (localTypingTimeoutRef.current) clearTimeout(localTypingTimeoutRef.current);
+    localTypingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      chatChannelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { isTyping: false, senderId: currentUser, receiverId: activeChatData.otherUser.id }
+      });
+    }, 2000);
   };
 
   const deleteMessage = async (messageId: string) => {
@@ -233,9 +309,14 @@ function MessagesContent() {
                     {conv.isJob && <span style={{ backgroundColor: "var(--color-primary)", color: "white", padding: "0.1rem 0.4rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: "bold" }}>JOBB</span>}
                     {conv.ad.title}
                   </div>
-                  <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", display: "flex", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span>{conv.otherUser.name || "Anonym"}</span>
-                    <span>{conv.lastUpdated.toLocaleDateString("sv-SE")}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      {conv.messages.some((m: any) => m.receiverId === currentUser && !m.readAt) && (
+                        <span style={{ width: "8px", height: "8px", backgroundColor: "var(--color-primary)", borderRadius: "50%" }}></span>
+                      )}
+                      <span>{conv.lastUpdated.toLocaleDateString("sv-SE")}</span>
+                    </div>
                   </div>
                 </div>
               ))
@@ -299,8 +380,13 @@ function MessagesContent() {
                           flex: 1
                         }}>
                           <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
-                          <div style={{ fontSize: "0.7rem", marginTop: "0.5rem", textAlign: "right", opacity: 0.7 }}>
-                            {new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+                          <div style={{ fontSize: "0.7rem", marginTop: "0.5rem", textAlign: "right", opacity: 0.7, display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                            <span>{new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}</span>
+                            {isMe && (
+                              <span style={{ fontWeight: 600 }}>
+                                {msg.readAt ? `Läst ${new Date(msg.readAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}` : "✓ Levererat"}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -311,13 +397,20 @@ function MessagesContent() {
               </div>
 
               {/* Skrivruta */}
-              <form onSubmit={sendMessage} style={{ padding: "1.5rem", borderTop: "1px solid var(--color-border)", display: "flex", gap: "1rem" }}>
+              <div style={{ padding: "0 1.5rem" }}>
+                {typingIndicator && (
+                  <div style={{ fontStyle: "italic", color: "var(--color-text-secondary)", fontSize: "0.85rem", marginBottom: "0.5rem", paddingLeft: "0.5rem", animation: "pulse 2s infinite" }}>
+                    Skriver...
+                  </div>
+                )}
+              </div>
+              <form onSubmit={sendMessage} style={{ padding: "1.5rem", paddingTop: typingIndicator ? "0.5rem" : "1.5rem", borderTop: "1px solid var(--color-border)", display: "flex", gap: "1rem" }}>
                 <input 
                   type="text" 
                   className="input-field" 
                   placeholder="Skriv ett meddelande..." 
                   value={replyContent}
-                  onChange={e => setReplyContent(e.target.value)}
+                  onChange={handleTyping}
                   style={{ flex: 1 }}
                 />
                 <button type="submit" className="btn-primary">Skicka</button>

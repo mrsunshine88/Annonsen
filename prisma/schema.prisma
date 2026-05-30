@@ -115,16 +115,18 @@ model Ad {
   @@index([authorId])
   @@index([createdAt])
   @@index([price])
+  @@index([title, brand, model])
 }
 
 model Message {
   id        String   @id @default(cuid())
   content   String
+  createdAt DateTime @default(now())
   isRead    Boolean  @default(false)
+  readAt    DateTime?
   isJobMessage Boolean @default(false)
   deletedBySender Boolean @default(false)
   deletedByReceiver Boolean @default(false)
-  createdAt DateTime @default(now())
 
   senderId String
   sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
@@ -255,4 +257,21 @@ model JobApplication {
 
   applicantId     String
   applicant       User     @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id               String   @id @default(uuid())
+  swishReference   String   @unique // Detta fält stoppar dubbelbetalningar på databasnivå
+  amount           Int
+  adId             String
+  createdAt        DateTime @default(now())
+}
+
+model VerificationToken {
+  id         String   @id @default(uuid())
+  identifier String   // Användarens e-post
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

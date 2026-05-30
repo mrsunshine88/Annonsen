@@ -71,6 +71,13 @@ export async function PUT(req: Request) {
       data: dataToUpdate
     });
 
+    // Trigga mejl om företaget precis blev godkänt
+    if (action === "toggleCompanyPage" && value === true) {
+      import("@/lib/email").then(({ sendCompanyApprovalEmail }) => {
+        sendCompanyApprovalEmail(updatedUser.email).catch(e => console.error("Email error:", e));
+      });
+    }
+
     return NextResponse.json(updatedUser);
   } catch (error) {
     return NextResponse.json({ error: "Ett fel uppstod" }, { status: 500 });

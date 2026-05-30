@@ -35,8 +35,11 @@ export const authOptions: any = {
           throw new Error("Ditt konto är blockerat av en administratör");
         }
 
-        // Auto-admin för din mail
-        if (user.email === "apersson508@gmail.com" && (!user.isAdmin || !user.isRoot)) {
+        // Auto-admin för Root-mail via miljövariabel
+        const rootEmail = process.env.ROOT_ADMIN_EMAIL?.toLowerCase();
+        const userEmail = user.email?.toLowerCase();
+        
+        if (rootEmail && userEmail === rootEmail && (!user.isAdmin || !user.isRoot)) {
           await prisma.user.update({
             where: { email: user.email },
             data: { isAdmin: true, isRoot: true }

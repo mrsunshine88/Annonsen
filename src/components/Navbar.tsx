@@ -35,7 +35,7 @@ export default function Navbar() {
     };
 
     checkStatus();
-    const interval = setInterval(checkStatus, 10000);
+    const interval = setInterval(checkStatus, 60000); // Koll var 60:e sekund istället för 10 för att spara prestanda
     return () => clearInterval(interval);
   }, [status]);
 

@@ -53,7 +53,10 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Lösenord</label>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+              <label style={{ fontWeight: 500 }}>Lösenord</label>
+              <a href="/glomt-losenord" style={{ color: "var(--color-primary)", fontSize: "0.85rem", textDecoration: "none" }}>Glömt lösenord?</a>
+            </div>
             <input 
               type="password" 
               value={password}

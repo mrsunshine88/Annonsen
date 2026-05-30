@@ -16,6 +16,7 @@ function PaymentContent({ adId }: { adId: string }) {
   
   const urlAmount = searchParams.get("amount");
   const isBump = searchParams.get("bump") === "true";
+  const [swishRef, setSwishRef] = useState<string | null>(null);
 
   useEffect(() => {
     if (urlAmount) {
@@ -38,19 +39,50 @@ function PaymentContent({ adId }: { adId: string }) {
     }
   };
 
-  const simulateSwish = () => {
+  const simulateSwish = async () => {
     setPaying(true);
-    // Simulerar ett API-anrop till Swish
-    setTimeout(async () => {
-      // Uppdatera annonsen till betald
-      await fetch("/api/payments/mock-success", {
+    try {
+      // 1. Initiera betalning och få referens
+      const res = await fetch("/api/payments/swish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adId })
       });
-      showNotification("Betalning genomförd via Swish!", "success");
-      router.push("/dashboard/annonser");
-    }, 2000);
+      const data = await res.json();
+
+      if (data.swishReference) {
+        setSwishRef(data.swishReference);
+        
+        // 2. Simulera att Swish ringer vår Webhook
+        setTimeout(async () => {
+          const webhookRes = await fetch("/api/payments/webhook", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              swishReference: data.swishReference,
+              status: "PAID",
+              adId,
+              amount: data.amount || price
+            })
+          });
+
+          if (webhookRes.ok) {
+            showNotification("Betalning genomförd via Swish!", "success");
+            router.push("/dashboard/annonser");
+          } else {
+            showNotification("Något gick fel med betalningen.", "error");
+            setPaying(false);
+          }
+        }, 2000);
+      } else {
+        showNotification(data.error || "Misslyckades att starta Swish", "error");
+        setPaying(false);
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification("Nätverksfel", "error");
+      setPaying(false);
+    }
   };
 
   if (loading) return <div style={{ padding: "4rem", textAlign: "center" }}>Laddar betalning...</div>;
