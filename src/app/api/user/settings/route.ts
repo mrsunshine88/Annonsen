@@ -27,7 +27,9 @@ export async function GET(req: Request) {
         companyOpeningHours: true,
         companyDescription: true,
         companyLogoUrl: true,
-        companyPhone: true
+        companyPhone: true,
+        canPublishAds: true,
+        hasActiveSubscription: true
       }
     });
 

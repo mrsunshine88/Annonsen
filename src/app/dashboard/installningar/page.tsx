@@ -26,6 +26,10 @@ export default function SettingsPage() {
   const [companyPhone, setCompanyPhone] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [canPublishAds, setCanPublishAds] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
   useEffect(() => {
     fetch("/api/user/settings")
       .then(res => res.json())
@@ -44,6 +48,9 @@ export default function SettingsPage() {
         if (data.companyDescription) setCompanyDescription(data.companyDescription);
         if (data.companyLogoUrl) setCompanyLogoUrl(data.companyLogoUrl);
         if (data.companyPhone) setCompanyPhone(data.companyPhone);
+        
+        if (data.hasActiveSubscription !== undefined) setHasActiveSubscription(data.hasActiveSubscription);
+        if (data.canPublishAds !== undefined) setCanPublishAds(data.canPublishAds);
       });
   }, []);
 
@@ -123,6 +130,27 @@ export default function SettingsPage() {
     }
   };
 
+  const startSubscription = async () => {
+    setPaymentLoading(true);
+    try {
+      const res = await fetch("/api/payments/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || "mock_price" })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showNotification(data.error || "Gick inte att starta betalning", "error");
+      }
+    } catch (err) {
+      showNotification("Ett nätverksfel uppstod", "error");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: "800px" }}>
       <h2 style={{ marginBottom: '2rem' }}>Inställningar</h2>
@@ -179,6 +207,41 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Fakturering och Prenumeration (Endast Företag/Arbetsgivare) */}
+        {(accountType === "Företag" || accountType === "Arbetsgivare") && (
+          <div style={{ padding: "1.5rem", backgroundColor: "var(--color-bg-surface)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)" }}>
+            <h3 style={{ marginBottom: "1.5rem" }}>Fakturering & Prenumeration</h3>
+            
+            {hasActiveSubscription ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem", backgroundColor: "rgba(16, 185, 129, 0.1)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-success)" }}>
+                <span style={{ fontSize: "1.5rem" }}>✅</span>
+                <div>
+                  <h4 style={{ margin: "0 0 0.25rem 0", color: "var(--color-success)" }}>Aktiv Prenumeration</h4>
+                  <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>Ditt konto är aktivt och du kan publicera annonser. Annonser faktureras automatiskt i slutet av månaden enligt din plan.</p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", padding: "1.5rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)" }}>
+                <div>
+                  <h4 style={{ margin: "0 0 0.5rem 0" }}>Aktivering krävs</h4>
+                  <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "0.9rem", lineHeight: "1.5" }}>
+                    För att kunna publicera annonser måste du aktivera företagets prenumeration via Stripe. Ditt kort debiteras inte direkt för annonser, utan kostnaderna samlas ihop och faktureras automatiskt.
+                  </p>
+                </div>
+                <button 
+                  type="button"
+                  onClick={startSubscription} 
+                  disabled={paymentLoading}
+                  className="btn-primary" 
+                  style={{ width: "fit-content", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                >
+                  {paymentLoading ? "Laddar..." : "💳 Aktivera Annonsering (Stripe)"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Företagsprofil */}
         {(accountType === "Företag" || accountType === "Arbetsgivare") && (

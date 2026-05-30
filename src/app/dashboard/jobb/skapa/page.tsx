@@ -12,6 +12,8 @@ export default function CreateJobAdPage() {
   const { data: session } = useSession();
 
   const [loading, setLoading] = useState(false);
+  const [canPublish, setCanPublish] = useState<boolean | null>(null);
+  const [accountType, setAccountType] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [industry, setIndustry] = useState("");
   const [location, setLocation] = useState("");
@@ -24,6 +26,19 @@ export default function CreateJobAdPage() {
   const [applyUrl, setApplyUrl] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+
+  import("react").then(({ useEffect }) => {
+    // Endast ladda om vi inte har hämtat
+    if (canPublish === null && typeof window !== "undefined") {
+      fetch("/api/user/settings")
+        .then(res => res.json())
+        .then(data => {
+          setCanPublish(data.canPublishAds ?? true); // Default true för säkert fall ifall fältet saknas
+          setAccountType(data.accountType);
+        })
+        .catch(() => setCanPublish(true));
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +74,15 @@ export default function CreateJobAdPage() {
       <div className="glass-panel" style={{ padding: "2rem", marginTop: "1rem" }}>
         <h1 style={{ fontSize: "1.8rem", color: "var(--color-primary)", marginBottom: "1.5rem" }}>Skapa Jobbannons</h1>
         
+        {canPublish === false && (accountType === "Företag" || accountType === "Arbetsgivare") ? (
+          <div style={{ padding: "2rem", backgroundColor: "var(--color-bg-surface)", border: "1px solid var(--color-error)", borderRadius: "var(--radius-lg)", textAlign: "center" }}>
+            <h2 style={{ color: "var(--color-error)", marginBottom: "1rem" }}>Aktivering krävs</h2>
+            <p style={{ color: "var(--color-text-secondary)", marginBottom: "2rem" }}>
+              Ditt konto måste aktiveras innan du kan publicera jobbannonser. Om du precis har skapat kontot väntar det på godkännande. Om du har blivit godkänd behöver du aktivera annonseringen under dina inställningar.
+            </p>
+            <button onClick={() => router.push("/dashboard/installningar")} className="btn-primary" style={{ display: "inline-block" }}>Gå till inställningar</button>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
           
           <section>
@@ -148,6 +172,7 @@ export default function CreateJobAdPage() {
             {loading ? "Publicerar..." : "Publicera Jobbannons"}
           </button>
         </form>
+        )}
       </div>
     </div>
   );
