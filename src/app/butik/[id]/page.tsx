@@ -159,65 +159,75 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      {/* Annonser */}
-      <h2 style={{ marginBottom: "1.5rem" }}>Alla annonser från {user.companyName} ({user.ads.length})</h2>
+      {user.accountType === "Företag" && (
+        <>
+          <h2 style={{ marginBottom: "1.5rem" }}>Alla annonser från {user.companyName} ({user.ads.length})</h2>
 
-      {user.ads.length === 0 ? (
-        <div className="glass-panel" style={{ padding: "3rem", textAlign: "center", color: "var(--color-text-secondary)" }}>
-          Företaget har inga aktiva annonser just nu.
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
-          {user.ads.map(ad => (
-            <Link key={ad.id} href={`/annons/${ad.id}`} className="glass-panel category-card" style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)" }}>
-              {/* Bild */}
-              <div style={{ height: "200px", backgroundColor: "var(--color-bg-subtle)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                {ad.imageUrls && ad.imageUrls.length > 0 ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <span style={{ color: "var(--color-text-muted)" }}>Ingen bild</span>
-                )}
-              </div>
-              
-              {/* Innehåll */}
-              <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flex: 1 }}>
-                <h3 style={{ margin: "0 0 0.5rem 0", color: "var(--color-primary)", fontSize: "1.2rem" }}>{ad.title}</h3>
-                <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "1rem" }}>
-                  {ad.category.name} • {ad.year ? `${ad.year} • ` : ""}{ad.mileage ? `${ad.mileage} mil` : ""}
-                </div>
-                
-                <div style={{ marginTop: "auto", fontSize: "1.25rem", fontWeight: 700, color: "var(--color-text-primary)" }}>
-                  {ad.price.toLocaleString("sv-SE")} kr
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+          {user.ads.length === 0 ? (
+            <div className="glass-panel" style={{ padding: "3rem", textAlign: "center", color: "var(--color-text-secondary)" }}>
+              Företaget har inga aktiva annonser just nu.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
+              {user.ads.map(ad => (
+                <Link key={ad.id} href={`/annons/${ad.id}`} className="glass-panel category-card" style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)" }}>
+                  {/* Bild */}
+                  <div style={{ height: "200px", backgroundColor: "var(--color-bg-subtle)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {ad.imageUrls && ad.imageUrls.length > 0 ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <span style={{ color: "var(--color-text-muted)" }}>Ingen bild</span>
+                    )}
+                  </div>
+                  
+                  {/* Innehåll */}
+                  <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flex: 1 }}>
+                    <h3 style={{ margin: "0 0 0.5rem 0", color: "var(--color-primary)", fontSize: "1.2rem" }}>{ad.title}</h3>
+                    <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginBottom: "1rem" }}>
+                      {ad.category.name} • {ad.year ? `${ad.year} • ` : ""}{ad.mileage ? `${ad.mileage} mil` : ""}
+                    </div>
+                    
+                    <div style={{ marginTop: "auto", fontSize: "1.25rem", fontWeight: 700, color: "var(--color-text-primary)" }}>
+                      {ad.price.toLocaleString("sv-SE")} kr
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      {/* Jobbannonser (om de finns) */}
-      {user.jobAds && user.jobAds.length > 0 && (
-        <div style={{ marginTop: "4rem" }}>
+      {/* Jobbannonser */}
+      {user.accountType === "Arbetsgivare" && (
+        <div style={{ marginTop: user.accountType === "Företag" ? "4rem" : "0" }}>
           <h2 style={{ marginBottom: "1.5rem" }}>Lediga jobb hos {user.companyName} ({user.jobAds.length})</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
-            {user.jobAds.map(job => (
-              <Link key={job.id} href={`/jobb/${job.id}`} className="glass-panel hover-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}>
-                <div style={{ height: '150px', background: 'linear-gradient(135deg, var(--color-primary), #1e40af)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center', position: 'relative' }}>
-                  <div style={{ position: "absolute", top: "-30px", left: "-30px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.1)" }}></div>
-                  <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', marginBottom: '1rem', fontWeight: 'bold', letterSpacing: '1px', zIndex: 1, color: 'white' }}>JOBB</span>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'white', zIndex: 1, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{job.title}</h3>
-                </div>
-                <div style={{ padding: '1rem' }}>
-                  <div style={{ color: 'var(--color-text)', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.95rem' }}>{job.scope} • {job.duration}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>📍 {job.location}</span>
-                    <span>{new Date(job.createdAt).toLocaleDateString("sv-SE")}</span>
+          
+          {user.jobAds.length === 0 ? (
+            <div className="glass-panel" style={{ padding: "3rem", textAlign: "center", color: "var(--color-text-secondary)" }}>
+              Företaget har inga lediga tjänster just nu.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
+              {user.jobAds.map(job => (
+                <Link key={job.id} href={`/jobb/${job.id}`} className="glass-panel hover-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}>
+                  <div style={{ height: '150px', background: 'linear-gradient(135deg, var(--color-primary), #1e40af)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center', position: 'relative' }}>
+                    <div style={{ position: "absolute", top: "-30px", left: "-30px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.1)" }}></div>
+                    <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', marginBottom: '1rem', fontWeight: 'bold', letterSpacing: '1px', zIndex: 1, color: 'white' }}>JOBB</span>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'white', zIndex: 1, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{job.title}</h3>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  <div style={{ padding: '1rem' }}>
+                    <div style={{ color: 'var(--color-text)', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.95rem' }}>{job.scope} • {job.duration}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>📍 {job.location}</span>
+                      <span>{new Date(job.createdAt).toLocaleDateString("sv-SE")}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
