@@ -8,29 +8,31 @@ import { Redis } from '@upstash/redis';
 let ratelimit: Ratelimit | null = null;
 
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  });
+  try {
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
 
-  // Begränsa till max 30 API-anrop per IP under 1 minut.
-  // Detta stoppar spam-botar, mass-skrapare och chat-spam.
-  ratelimit = new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(30, '1 m'),
-    analytics: true,
-  });
+    ratelimit = new Ratelimit({
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(30, '1 m'),
+      analytics: true,
+    });
+  } catch (initError) {
+    console.error("Failed to initialize Upstash Redis:", initError);
+  }
 }
 
 export async function middleware(request: NextRequest) {
   // Applicera rate limiting på skyddskänsliga /api/ rutter
   if (request.nextUrl.pathname.startsWith('/api/')) {
     
-    // Vi undantar webhooks, cron jobs och navbar-polling från IP-begränsningar
+    // Vi undantar webhooks, cron jobs och NextAuth från IP-begränsningar
     if (
       request.nextUrl.pathname.startsWith('/api/webhook') || 
       request.nextUrl.pathname.startsWith('/api/cron/') ||
-      request.nextUrl.pathname === '/api/auth/status'
+      request.nextUrl.pathname.startsWith('/api/auth/')
     ) {
        return NextResponse.next();
     }
