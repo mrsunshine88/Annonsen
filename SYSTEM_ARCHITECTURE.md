@@ -65,7 +65,22 @@ När en användare loggar in sker en initial omdirigering i `app/page.tsx` och v
 Användare kan klicka på "Följ" på både Företag (butiker) och Arbetsgivare. 
 Under `/dashboard/flodet` hämtas sedan både vanliga Varuannonser och Jobbannonser från de konton användaren följer. Algoritmen slår ihop dessa två helt olika datatyper och sorterar dem kronologiskt, vilket ger en modern "social-media"-liknande feed. Jobbannonserna får en specifik visuell "Jobb"-kortdesign för att passa in bland bildtunga varuannonser.
 
-### 4.5 Admin Notifikationer
+### 4.7 API-Säkerhet och Rate Limiting
+Eftersom vi inte har ett externt CDN som hanterar allt brandväggsskydd ligger mycket av ansvaret i koden. I `middleware.ts` har vi implementerat IP-baserad "Rate Limiting" via **Upstash Redis**.
+- Om en användare (IP) försöker skicka 100 inloggningsförsök eller skapa 50 annonser på en minut, blockeras IP-adressen automatiskt med ett HTTP 429-fel.
+
+### 4.8 Uppladdningssäkerhet (Anti-Malware)
+Eftersom `browser-image-compression` sker på klienten kan en skicklig användare kringgå det formuläret. Därför har vi byggt ett sista försvar i `/api/upload`:
+- **Storleksspärr:** Servern tvärstoppar filer som är över 5 MB.
+- **Magic Numbers Validation:** Istället för att lita på filändelser (t.ex. att någon döpt sin .exe-fil till .jpg) inspekterar servern filens faktiska binära *header-bytes*. Endast filer som faktiskt "börjar" som JPEG (`FF D8 FF`), PNG eller WEBP accepteras och skickas vidare till Vercel Blob.
+
+### 4.9 Bevissparning (Soft Delete) & Polisutdrag
+För att skydda användare vid bedrägerier på marknadsplatsen tillämpar vi "Soft Delete" för chattmeddelanden.
+- Om en användare klickar på "Ta bort konversation" tas meddelandet bara bort visuellt för dem (`deletedBySender = true`). Det stannar kvar i databasen.
+- **Datautdrag:** Endast administratörer med rättigheten `isAdmin` har tillgång till `/admin/datautdrag`. Där kan admin söka på valfri e-post och direkt få ut en total logg över skickade/mottagna meddelanden, inklusive de som "raderats".
+- **Cron Jobb:** För att följa GDPR (minimering av data) och inte lagra gigantiska mängder gammal data har vi ett automatiserat jobb (`/api/cron/clean-messages`) som körs i bakgrunden. Det raderar fysiskt alla meddelanden ur databasen som **båda parter** markerat som raderade, men **först när 30 dagar har passerat**.
+
+### 4.10 Admin Notifikationer
 Ett smart notissystem är implementerat för att snabbt uppmärksamma administratörer på nya anmälningar (`AdReport`):
 - När en användare skapar en anmälan sparas den med `adminViewed = false`.
 - En lättviktig polling var 10:e sekund via `/api/auth/status` (inbyggd i `Navbar`) räknar ut antalet olästa anmälningar och renderar dynamiskt en röd notisbubbla intill "Admin" i huvudmenyn.
@@ -74,7 +89,7 @@ Ett smart notissystem är implementerat för att snabbt uppmärksamma administra
 
 ---
 
-## 5. Kärnfunktioner & Flöden
+## 5. Nyckelfunktioner och Flöden
 
 ### 5.1 Annonsflödet (Skapa och Söka)
 - **Skapa:** Formuläret (`/skapa`) känner av vilken kategori som valts. Om "Bilar" väljs renderas extra input-fält för bilens specifikationer. Sidan hämtar `autoLocation` från användaren.
@@ -123,13 +138,13 @@ Mejl skickas automatiserat vid tre viktiga knutpunkter:
 2. **Onboarding:** När en admin trycker "Godkänn" på ett B2B-konto skjuts ett välkomstmejl iväg med länk direkt till skapande av annonser.
 3. **Glömt Lösenord:** Sidan för att återställa lösenord genererar en kryptografisk token (via inbyggda modulen `crypto`) och sparar den i `VerificationToken`. *Varför är det säkert?* API-routen (`/api/auth/forgot-password`) returnerar *alltid* HTTP 200 OK och ett standardmeddelande oavsett om mejladressen fanns i databasen eller ej. Detta är ett försvar mot "User Enumeration", vilket hindrar botar från att lista ut vilka som har konton. När token sedan valideras vid uppdateringen av lösenordet används en ACID-transaktion för att samtidigt byta lösenord (krypterat med bcrypt) och permanent radera token-koden från databasen.
 
-### 5.5 GDPR och Tvingande Villkor (Säker Onboarding)
+### 5.6 GDPR och Tvingande Villkor (Säker Onboarding)
 För att säkerställa 100% efterlevnad av svensk lag och GDPR använder vi oss av en tvingande "Interceptor"-modal (`TermsModal.tsx`).
 - När en användare loggar in kontrolleras databasfältet `termsAccepted`.
 - Om detta fält är `false` (vilket det är för alla nya och gamla konton som inte godkänt ännu), läggs en oundviklig, skärmtäckande modal ovanpå hela gränssnittet. Användaren tvingas läsa och kryssa i att de accepterar våra **Användarvillkor** och **Integritetspolicy** innan de kan göra något alls på plattformen.
 - Vid klick på "Jag godkänner" anropas `/api/user/accept-terms` som sätter `termsAccepted = true` varpå modalen stängs permanent. Sessionen uppdateras lokalt via NextAuths `update`-funktion för att slippa ladda om sidan.
 
-### 5.6 Inbyggd Kundtjänst (Kontaktformulär)
+### 5.7 Inbyggd Kundtjänst (Kontaktformulär)
 Plattformen har ett inbyggt CRM-liknande kundtjänstflöde:
 1. **Publik Sida:** På `/kontakt` kan besökare fylla i namn, e-post, telefon och ett meddelande.
 2. **Databas (ContactMessage):** Meddelandet sparas i en separat databas-tabell (`ContactMessage`), istället för att skicka ett osäkert mail direkt.

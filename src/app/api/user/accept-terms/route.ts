@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function POST() {
   try {
-    const session = await getServerSession(authOptions);
+    const session: any = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: "Obehörig" }, { status: 401 });
     }

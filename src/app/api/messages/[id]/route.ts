@@ -30,7 +30,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return NextResponse.json({ error: "Du har inte behörighet att radera detta meddelande" }, { status: 403 });
     }
 
-    // Uppdatera flaggorna istället för att ta bort raden helt (om inte båda har raderat det)
+    // Uppdatera flaggorna istället för att ta bort raden helt (bevissparning)
     const updateData: any = {};
     if (message.senderId === userId) {
       updateData.deletedBySender = true;
@@ -39,20 +39,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       updateData.deletedByReceiver = true;
     }
 
-    // Om båda har raderat det (eller om vi just satte den sista flaggan till true), kan vi radera raden helt för att spara plats
-    const willBeDeletedBySender = updateData.deletedBySender || message.deletedBySender;
-    const willBeDeletedByReceiver = updateData.deletedByReceiver || message.deletedByReceiver;
-
-    if (willBeDeletedBySender && willBeDeletedByReceiver) {
-      await prisma.message.delete({
-        where: { id: messageId }
-      });
-    } else {
-      await prisma.message.update({
-        where: { id: messageId },
-        data: updateData
-      });
-    }
+    await prisma.message.update({
+      where: { id: messageId },
+      data: updateData
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

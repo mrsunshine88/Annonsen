@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || !(session.user as any).isAdmin) {
+    const session: any = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.isAdmin) {
       return NextResponse.json({ error: "Obehörig" }, { status: 401 });
     }
 
@@ -25,8 +25,8 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user || !(session.user as any).isAdmin) {
+    const session: any = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.isAdmin) {
       return NextResponse.json({ error: "Obehörig" }, { status: 401 });
     }
 
