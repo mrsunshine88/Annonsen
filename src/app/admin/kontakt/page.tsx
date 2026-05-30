@@ -81,13 +81,20 @@ export default function AdminContactPage() {
                     <span>🕒 {new Date(msg.createdAt).toLocaleString("sv-SE")}</span>
                   </div>
                 </div>
-                <button 
-                  onClick={() => toggleReadStatus(msg.id, msg.isRead)}
-                  className={msg.isRead ? "secondary-btn" : "primary-btn"}
-                  style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}
-                >
-                  {msg.isRead ? "Markera som oläst" : "Markera som läst"}
-                </button>
+                {msg.isRead ? (
+                  <span style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem", fontWeight: "bold", color: "var(--color-success)", backgroundColor: "rgba(34, 197, 94, 0.1)", borderRadius: "8px", border: "1px solid rgba(34, 197, 94, 0.3)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Hanterad
+                  </span>
+                ) : (
+                  <button 
+                    onClick={() => toggleReadStatus(msg.id, msg.isRead)}
+                    className="btn-primary"
+                    style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}
+                  >
+                    Markera som hanterad
+                  </button>
+                )}
               </div>
 
               <div style={{ padding: "1rem", backgroundColor: "var(--color-bg)", borderRadius: "8px", border: "1px solid var(--color-border)", whiteSpace: "pre-wrap" }}>

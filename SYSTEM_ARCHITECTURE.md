@@ -45,10 +45,10 @@ Vi har implementerat tre huvudspår för användare (styrs via fältet `accountT
 
 ### 4.2 Admin, RBAC och Godkännanden
 - **Admin (`isAdmin: true`):** Har tillgång till `/admin/*`. Kan redigera andras annonser, blockera konton, tömma uppladdade bilder från regelbrytande annonser och sätta priser (Settings).
-- **Godkännandesystem (RBAC):** Företag och Arbetsgivare publiceras *inte* automatiskt. I tabellen `User` finns två kritiska fält:
+- **Moderering och Godkännanden (RBAC):** Företag och Arbetsgivare har två kritiska rättighetsfält i tabellen `User`:
   - `companyPageApproved`: Styr om deras publika butikssida (`/butik/[id]`) är synlig för allmänheten.
-  - `canPublishAds`: Styr om de överhuvudtaget får skapa nya annonser och om deras befintliga annonser syns i sökresultaten.
-  *Varför?* Detta ger plattformsägaren full kontroll över kvaliteten och säkerställer att B2B-kunder kan faktureras korrekt innan de utnyttjar plattformen. Är man inte godkänd visas tydliga varningar i dashboarden.
+  - `canPublishAds`: Styr om de överhuvudtaget får skapa nya annonser.
+  *Hur det fungerar i praktiken:* När ett B2B-konto betalar sin prenumeration via Stripe, slår systemet **automatiskt** över dessa fält till `true` så de kan börja direkt. Administratörernas roll (under `/admin/konton`) är numera **modererande**. Om ett företag missköter sig använder admin knapparna "Dölj Sida" och "Stoppa Annons" som en nödspärr för att stänga ner dem omedelbart.
 - **Root-admin (`isRoot: true`):** Root-användarens e-post identifieras numera via miljövariabeln `ROOT_ADMIN_EMAIL` i `.env` (tidigare hårdkodad för enklare MVP-stadiet). *Varför?* Att hårdkoda administratörers mailadresser är en säkerhetsrisk. Genom miljövariabler skyddas identiteten från obehöriga utvecklare och plattformsägaren kan dynamiskt byta root-konto i Vercel utan att göra en ny kod-release. Logiken i NextAuth garanterar att e-posten i variabeln alltid tilldelas `isAdmin` och `isRoot` vid inloggning. Denna logik använder även `.toLowerCase()` för att göra matchningen skiftlägesoberoende, vilket eliminerar risken att plattformsägaren låser sig ute vid en felskrivning. Ett root-konto kan **aldrig** blockeras, få sina rättigheter borttagna, eller raderas av andra admins.
 
 ### 4.3 Blockering
@@ -148,7 +148,7 @@ För att säkerställa 100% efterlevnad av svensk lag och GDPR använder vi oss 
 Plattformen har ett inbyggt CRM-liknande kundtjänstflöde:
 1. **Publik Sida:** På `/kontakt` kan besökare fylla i namn, e-post, telefon och ett meddelande.
 2. **Databas (ContactMessage):** Meddelandet sparas i en separat databas-tabell (`ContactMessage`), istället för att skicka ett osäkert mail direkt.
-3. **Admin Panel:** Administratörer navigerar till `/admin/kontakt` för att läsa alla inkomna meddelanden. Listan uppdateras dynamiskt och admin kan markera ärenden som "lästa" via ett API (`PATCH /api/admin/contact`) när de svarat användaren från sin egen e-postklient.
+3. **Admin Panel & Låsning:** Administratörer navigerar till `/admin/kontakt` för att läsa alla inkomna meddelanden. När admin klickar på "Markera som hanterad", ändras ärendets status permanent. Knappen försvinner och ersätts av en grön "✅ Hanterad"-etikett. Detta fungerar som ett oföränderligt CRM-lås så att kollegor aldrig råkar klicka tillbaka ärendet till ohanterat av misstag.
 
 ---
 
@@ -173,8 +173,8 @@ src/
 
 ## 7. Frontend Design & Responsivitet
 Vi undvek Tailwind (på beställning) och byggde en ren, egen design med Vanilla CSS i `globals.css`:
-- **Glassmorphism:** Vi använder flitigt `.glass-panel` för att skapa kort och containers med frostad glas-effekt (`backdrop-filter`).
-- **Företagssidor:** Företagssidor (`/butik/[id]`) har fått en premium-design. Den innefattar en dynamisk CSS-gradient som hero-banner, en överlappande logotyp med skuggning (box-shadow), och kontaktinformation (öppettider, org.nr etc) uppdelade i "piller" (span-element) för maximal läsbarhet och en "premium SaaS"-känsla.
+- **Premium UI & Glassmorphism:** Vi använder flitigt `.glass-panel` för att skapa kort och containers med frostad glas-effekt (`backdrop-filter`). Gränssnittet genomsyras av "SaaS Billion-dollar"-estetik. Det innefattar mjuka pillerformade knappar (`.dashboard-link`), logotyper i "linear-gradient" med clip-maskning, och välavvägd färgpalett där ren svärta byts ut mot professionella mjukare nyanser (`--color-text-secondary`, `--color-bg-subtle`).
+- **Företagssidor:** Företagssidor (`/butik/[id]`) har fått en premium-design. Den innefattar en dynamisk CSS-gradient som hero-banner, en överlappande logotyp med skuggning (box-shadow), och kontaktinformation (öppettider, org.nr etc) uppdelade i "piller" (span-element) för maximal läsbarhet.
 - **Jobb-kort:** Jobbannonser som visas i rutnät (grids), t.ex. på företagssidan eller i flödet, använder en elegant gradient (`linear-gradient(135deg, var(--color-primary), #1e40af)`) i kombination med subtila cirkel-skuggor och explicit vit textskugga för att säkerställa perfekt kontrast och en modern look.
 - **Layout:** Klasserna `.grid-2-col` och `.responsive-flex` används rakt igenom hela systemet. På skrivbord visar de side-by-side layouter, men via CSS media-queries (`@media (max-width: 768px)`) faller de automatiskt ner i en enkel kolumn på mobiltelefoner.
 - **Teman:** Alla färger hämtas via CSS-variabler (`var(--color-primary)`). Detta gör att det är extremt enkelt att implementera eller finjustera dark mode genom att enbart ändra variablerna i en `@media (prefers-color-scheme: dark)`-block.
