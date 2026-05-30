@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import ContactSellerForm from "./ContactSellerForm";
 import BackButton from "@/components/BackButton";
 import AdActions from "./AdActions";
+import Image from "next/image";
 
 const prisma = new PrismaClient();
 
@@ -69,10 +70,15 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
         {/* Vänster: Bilder och Info */}
         <div style={{ flex: "2", minWidth: "250px" }}>
           {/* Bildgalleri (Enkel variant) */}
-          <div className="glass-panel" style={{ height: "400px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", marginBottom: "1.5rem" }}>
+          <div className="glass-panel" style={{ height: "400px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", marginBottom: "1.5rem", position: "relative" }}>
             {ad.imageUrls && ad.imageUrls.length > 0 ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Image 
+                src={ad.imageUrls[0]} 
+                alt={ad.title} 
+                fill 
+                style={{ objectFit: "cover" }} 
+                sizes="(max-width: 768px) 100vw, 800px"
+              />
             ) : (
               <span style={{ color: "var(--color-text-secondary)" }}>Inga bilder uppladdade</span>
             )}
@@ -129,9 +135,14 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 <h3 style={{ marginBottom: "1rem", borderBottom: "1px solid var(--color-border)", paddingBottom: "0.5rem" }}>Säljs av Butik</h3>
                 
                 {ad.author.companyLogoUrl && (
-                  <div style={{ marginBottom: "1rem", textAlign: "center" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={ad.author.companyLogoUrl} alt={ad.author.companyName || "Företagslogga"} style={{ maxHeight: "80px", maxWidth: "100%", objectFit: "contain" }} />
+                  <div style={{ marginBottom: "1rem", textAlign: "center", height: "80px", position: "relative" }}>
+                    <Image 
+                      src={ad.author.companyLogoUrl} 
+                      alt={ad.author.companyName || "Företagslogga"} 
+                      fill 
+                      style={{ objectFit: "contain" }} 
+                      sizes="200px"
+                    />
                   </div>
                 )}
                 

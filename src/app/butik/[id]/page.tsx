@@ -5,6 +5,7 @@ import BackButton from "@/components/BackButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import FollowButton from "@/components/FollowButton";
+import Image from "next/image";
 
 const prisma = new PrismaClient();
 
@@ -95,8 +96,15 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
             flexShrink: 0
           }}>
             {user.companyLogoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.companyLogoUrl} alt={user.companyName || "Logotyp"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", backgroundColor: 'white' }} />
+              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <Image 
+                  src={user.companyLogoUrl} 
+                  alt={user.companyName || "Logotyp"} 
+                  fill 
+                  style={{ objectFit: "contain", backgroundColor: 'white' }} 
+                  sizes="130px"
+                />
+              </div>
             ) : (
               <span style={{ fontSize: "3rem" }}>🏢</span>
             )}
@@ -172,10 +180,15 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
               {user.ads.map(ad => (
                 <Link key={ad.id} href={`/annons/${ad.id}`} className="glass-panel category-card" style={{ display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: "var(--radius-lg)", border: "1px solid var(--color-border)" }}>
                   {/* Bild */}
-                  <div style={{ height: "200px", backgroundColor: "var(--color-bg-subtle)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  <div style={{ height: "200px", backgroundColor: "var(--color-bg-subtle)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
                     {ad.imageUrls && ad.imageUrls.length > 0 ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <Image 
+                        src={ad.imageUrls[0]} 
+                        alt={ad.title} 
+                        fill 
+                        style={{ objectFit: "cover" }} 
+                        sizes="(max-width: 768px) 100vw, 300px"
+                      />
                     ) : (
                       <span style={{ color: "var(--color-text-muted)" }}>Ingen bild</span>
                     )}

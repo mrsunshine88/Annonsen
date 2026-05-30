@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import Image from "next/image";
 import DeleteAdButton from "./DeleteAdButton";
 
 const prisma = new PrismaClient();
@@ -35,10 +36,15 @@ export default async function MyAdsPage() {
           {ads.map(ad => (
             <div key={ad.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <div style={{ width: '80px', height: '80px', flexShrink: 0, borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: 'var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '80px', height: '80px', flexShrink: 0, borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: 'var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                   {ad.imageUrls && ad.imageUrls.length > 0 ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={ad.imageUrls[0]} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image 
+                      src={ad.imageUrls[0]} 
+                      alt={ad.title} 
+                      fill 
+                      style={{ objectFit: 'cover' }} 
+                      sizes="80px"
+                    />
                   ) : (
                     <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Ingen bild</span>
                   )}

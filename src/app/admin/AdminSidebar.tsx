@@ -51,8 +51,8 @@ export default function AdminSidebar() {
             <Link href="/admin/kostnad" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Privatperson</Link>
             <Link href="/admin/foretag" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Företag</Link>
             <Link href="/admin/arbetsgivare" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>Arbetsgivare</Link>
-            <Link href="/admin/kontakt" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>💬 Kundtjänst</Link>
             <Link href="/admin/datautdrag" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>👮‍♂️ Datautdrag</Link>
+            <Link href="/admin/system" className="dashboard-link" style={{ display: 'block', margin: '0.2rem 0' }}>⚙️ Systemstatus</Link>
           </nav>
         </div>
 
@@ -78,7 +78,8 @@ export default function AdminSidebar() {
               <Link href="/admin/foretag" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>Företag</Link>
               <Link href="/admin/arbetsgivare" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>Arbetsgivare</Link>
               <Link href="/admin/kontakt" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>💬 Kundtjänst</Link>
-              <Link href="/admin/datautdrag" style={{ display: 'block', padding: '1rem 0', color: 'var(--color-primary)', fontWeight: 600 }}>👮‍♂️ Datautdrag</Link>
+              <Link href="/admin/datautdrag" style={{ display: 'block', padding: '1rem 0', borderBottom: '1px solid rgba(226, 232, 240, 0.5)', color: 'var(--color-primary)', fontWeight: 600 }}>👮‍♂️ Datautdrag</Link>
+              <Link href="/admin/system" style={{ display: 'block', padding: '1rem 0', color: 'var(--color-primary)', fontWeight: 600 }}>⚙️ Systemstatus</Link>
             </nav>
           </details>
         </div>

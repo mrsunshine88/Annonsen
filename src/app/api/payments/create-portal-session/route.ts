@@ -32,6 +32,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: portalSession.url });
     } else {
       // För test/lokalt om nycklar saknas
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json({ error: "Betalningssystemet är tillfälligt otillgängligt." }, { status: 500 });
+      }
       console.log("[MOCK] Öppnar Stripe Customer Portal");
       return NextResponse.json({ url: "/dashboard/installningar?mock_portal=true" });
     }

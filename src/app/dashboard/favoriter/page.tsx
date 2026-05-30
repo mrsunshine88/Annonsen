@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import Image from "next/image";
 
 const prisma = new PrismaClient();
 
@@ -41,10 +42,15 @@ export default async function FavoritesPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
           {favorites.map(fav => (
             <Link key={fav.id} href={`/annons/${fav.ad.id}`} className="glass-panel hover-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}>
-              <div style={{ height: '200px', backgroundColor: 'var(--color-bg-subtle)' }}>
+              <div style={{ height: '200px', backgroundColor: 'var(--color-bg-subtle)', position: 'relative' }}>
                 {fav.ad.imageUrls && fav.ad.imageUrls.length > 0 ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={fav.ad.imageUrls[0]} alt={fav.ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Image 
+                    src={fav.ad.imageUrls[0]} 
+                    alt={fav.ad.title} 
+                    fill 
+                    style={{ objectFit: 'cover' }} 
+                    sizes="(max-width: 768px) 100vw, 300px"
+                  />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-secondary)' }}>Ingen bild</div>
                 )}

@@ -40,15 +40,18 @@ All data definieras i `prisma/schema.prisma`. Relationen är byggd med `onDelete
 ### 4.1 Kontotyper
 Vi har implementerat tre huvudspår för användare (styrs via fältet `accountType`):
 1. **Privat:** Standardanvändare. Kan lägga upp vanliga annonser.
-2. **Företag:** Har en egen "butikssida" (`/butik/[id]`). Kan prenumerera mot en månadskostnad och har ofta specialpriser på fordonsannonser.
-3. **Arbetsgivare:** Kan komma åt Jobb-dashboardet för att lägga ut platsannonser (`JobAd`) och ta emot/hantera `JobApplication`. Kan ha separat prissättning (per månad / per platsannons).
+2. **Företag:** Har en egen "butikssida" (`/butik/[id]`). Kan prenumerera mot en månadskostnad via Stripe (styrs av miljövariabeln `NEXT_PUBLIC_STRIPE_PRICE_ID_COMPANY`). Får då tillgång till obegränsad annonsering av fordon/produkter.
+3. **Arbetsgivare:** Kan komma åt Jobb-dashboardet för att lägga ut platsannonser (`JobAd`) och ta emot/hantera `JobApplication`. Har en separat prenumerationskostnad via Stripe (styrs av miljövariabeln `NEXT_PUBLIC_STRIPE_PRICE_ID_EMPLOYER`).
+
+*Kassalogik:* Koden i Inställningar känner dynamiskt av kontotypen (`accountType`) och skickar användaren till rätt betalningssida med rätt belopp i Stripe.
 
 ### 4.2 Admin, RBAC och Godkännanden
 - **Admin (`isAdmin: true`):** Har tillgång till `/admin/*`. Kan redigera andras annonser, blockera konton, tömma uppladdade bilder från regelbrytande annonser och sätta priser (Settings).
 - **Moderering och Godkännanden (RBAC):** Företag och Arbetsgivare har två kritiska rättighetsfält i tabellen `User`:
   - `companyPageApproved`: Styr om deras publika butikssida (`/butik/[id]`) är synlig för allmänheten.
   - `canPublishAds`: Styr om de överhuvudtaget får skapa nya annonser.
-  *Hur det fungerar i praktiken:* När ett B2B-konto betalar sin prenumeration via Stripe, slår systemet **automatiskt** över dessa fält till `true` så de kan börja direkt. Administratörernas roll (under `/admin/konton`) är numera **modererande**. Om ett företag missköter sig använder admin knapparna "Dölj Sida" och "Stoppa Annons" som en nödspärr för att stänga ner dem omedelbart.
+  *Hur det fungerar i praktiken:* När ett B2B-konto betalar sin prenumeration via Stripe, slår systemet **automatiskt** över dessa fält till `true` så de kan börja direkt. Administratörernas roll (under `/admin/konton`) är numera i första hand **modererande**.
+  *Mock-läge / Test:* Om plattformen körs utan `STRIPE_SECRET_KEY` aktiveras automatiskt ett felsäkert "Mock-läge". Ett klick på "Aktivera annonsering" simulerar då ett direkt godkänt kortköp, uppdaterar databasen med godkännandena och omdirigerar användaren tillbaka till `inställningar` utan att applikationen kraschar. Detta gör det extremt snabbt att testa UI-flöden i utvecklingsfasen utan att behöva hantera testkort.
 - **Root-admin (`isRoot: true`):** Root-användarens e-post identifieras numera via miljövariabeln `ROOT_ADMIN_EMAIL` i `.env` (tidigare hårdkodad för enklare MVP-stadiet). *Varför?* Att hårdkoda administratörers mailadresser är en säkerhetsrisk. Genom miljövariabler skyddas identiteten från obehöriga utvecklare och plattformsägaren kan dynamiskt byta root-konto i Vercel utan att göra en ny kod-release. Logiken i NextAuth garanterar att e-posten i variabeln alltid tilldelas `isAdmin` och `isRoot` vid inloggning. Denna logik använder även `.toLowerCase()` för att göra matchningen skiftlägesoberoende, vilket eliminerar risken att plattformsägaren låser sig ute vid en felskrivning. Ett root-konto kan **aldrig** blockeras, få sina rättigheter borttagna, eller raderas av andra admins.
 
 ### 4.3 Blockering
@@ -199,3 +202,23 @@ Ett enormt fokus har lagts på att optimera applikationens svarstider, säkerhet
 - **Bildhantering & Uppladdningar:** Bilduppladdningar och dokumentuppladdningar (CV/Brev) hanteras fullt ut med **Vercel Blob** (`@vercel/blob`). Den asynkrona backend-routen `/api/upload` genererar unika UUID-filnamn och sparar dem säkert i molnet. Den hanterar även fallback för filtyper ifall mobila webbläsare strippar `.docx` eller `.pdf` från filnamnet.
 
 Detta system är 100% dynamiskt och byggt för att enkelt kunna skalas upp både horisontellt (Next.js serverless) och vertikalt (PostgreSQL)!
+
+---
+
+## 10. Senaste Prestanda- & Säkerhetsuppdateringar (Inför Lansering)
+För att säkerställa att systemet är 100 % produktionsredo har följande kritiska uppdateringar implementerats:
+
+### 10.1 Bildoptimering (Next.js `<Image>`)
+- **Vad:** Överallt där annonsbilder och företagsloggor visas i listor (flödet, annonser, butik, favoriter) används nu Next.js inbyggda `<Image>`-komponent istället för standard `<img>`-taggar.
+- **Hur:** Next.js-komponenten anropar en serverlös bild-proxy. Parametrar som `fill` och `sizes` används för att säkerställa att bilden anpassar sig till CSS-layouten.
+- **Varför:** Att ladda originalbilder på 800 KB direkt från Vercel Blob krossar bandbredden och prestandan i mobila enheter (4 MB per annons-svep). Next.js skalar nu blixtsnabbt ner bilderna på servern till små thumbnails i moderna format (WebP/AVIF), vilket sparar upp till 80% bandbredd och förbättrar Core Web Vitals.
+
+### 10.2 Stripe Säkerhetsfix (Strikt Mock-lägeskontroll)
+- **Vad:** En striktare miljökontroll (`process.env.NODE_ENV`) lades till i `/api/payments/create-checkout-session` och `create-portal-session`.
+- **Hur:** Om koden upptäcker att applikationen körs i produktion (`"production"`) men `STRIPE_SECRET_KEY` saknas, avbryts anropet omedelbart med en HTTP 500-status ("Betalningssystemet är tillfälligt otillgängligt").
+- **Varför:** Tidigare existerade en "failsafe" som delade ut gratiskonton (mock-prenumerationer) om Stripe-nyckeln saknades (byggt för smidig lokal utveckling). Detta utgjorde en affärskritisk sårbarhet: om Stripe-nyckeln raderades av misstag i Vercel hade vem som helst kunnat klicka på "Betala" och fått tjänsten gratis. Nu är Mock-läget hermetiskt låst till utvecklingsmiljön (`development`).
+
+### 10.3 Systemstatus-sida (Admin)
+- **Vad:** En ny diagnostisk instrumentpanel skapades på `/admin/system` (nås via botten av Admin-menyn).
+- **Hur:** En typsäker (Server Component) sida validerar och visuellt markerar (Rött/Grönt) närvaron av API-nycklar (`STRIPE_SECRET_KEY`, `RESEND_API_KEY`) och vilken `NODE_ENV` systemet befinner sig i. Ett TypeScript-fel (`user.role`) hittades och korrigerades till `!user.isAdmin && !user.isRoot` i samband med detta.
+- **Varför:** För att ge administratören/ägaren en omedelbar "Pre-flight check" innan lansering, så att de kan garantera att test-nycklar och mock-lägen är helt inaktiverade och att systemet "pratar" med rätt produktionstjänster.

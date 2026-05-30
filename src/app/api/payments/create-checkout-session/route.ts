@@ -23,6 +23,11 @@ export async function POST(req: Request) {
 
     // Failsafe/Mock för lokal miljö om Stripe-nycklar saknas
     if (!process.env.STRIPE_SECRET_KEY) {
+      if (process.env.NODE_ENV === "production") {
+        console.error("KRITISKT FEL: Stripe-nyckel saknas i produktionsmiljö!");
+        return NextResponse.json({ error: "Betalningssystemet är tillfälligt otillgängligt." }, { status: 500 });
+      }
+      
       await prisma.user.update({
         where: { id: user.id },
         data: { hasActiveSubscription: true, canPublishAds: true, companyPageApproved: true, stripeSubscriptionItemId: "mock_sub_item" }
