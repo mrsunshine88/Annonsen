@@ -201,7 +201,7 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
 
       {/* Jobbannonser */}
       {user.accountType === "Arbetsgivare" && (
-        <div style={{ marginTop: user.accountType === "Företag" ? "4rem" : "0" }}>
+        <div style={{ marginTop: "0" }}>
           <h2 style={{ marginBottom: "1.5rem" }}>Lediga jobb hos {user.companyName} ({user.jobAds.length})</h2>
           
           {user.jobAds.length === 0 ? (
