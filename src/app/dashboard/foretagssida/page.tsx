@@ -47,32 +47,82 @@ export default async function DashboardCompanyPage() {
          </div>
       )}
 
-      {/* Header för Företaget */}
-      <div className="glass-panel" style={{ padding: "3rem 2rem", marginBottom: "3rem", display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "center", border: "2px dashed var(--color-border)" }}>
+      {/* Hero för Företaget */}
+      <div className="glass-panel" style={{ marginBottom: "3rem", overflow: "hidden", position: "relative", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)" }}>
         
-        {/* Logga */}
-        <div style={{ flexShrink: 0, width: "150px", height: "150px", backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-          {user.companyLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.companyLogoUrl} alt={user.companyName || "Logotyp"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-          ) : (
-            <span style={{ fontSize: "3rem" }}>🏢</span>
-          )}
+        {/* Banner Gradient */}
+        <div style={{ height: "180px", background: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)", position: "relative" }}>
+          <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "250px", height: "250px", borderRadius: "50%", background: "rgba(255,255,255,0.05)" }}></div>
+          <div style={{ position: "absolute", bottom: "-50px", left: "20%", width: "150px", height: "150px", borderRadius: "50%", background: "rgba(255,255,255,0.03)" }}></div>
         </div>
+        
+        <div style={{ padding: "0 2rem 2rem 2rem", position: "relative", zIndex: 2 }}>
+          {/* Logga överlappande */}
+          <div style={{ 
+            marginTop: "-60px", 
+            marginBottom: "1.5rem", 
+            width: "130px", 
+            height: "130px", 
+            backgroundColor: "#ffffff", 
+            borderRadius: "var(--radius-md)", 
+            display: "inline-flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            overflow: "hidden", 
+            border: "4px solid #ffffff", 
+            boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+            flexShrink: 0
+          }}>
+            {user.companyLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.companyLogoUrl} alt={user.companyName || "Logotyp"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", backgroundColor: 'white' }} />
+            ) : (
+              <span style={{ fontSize: "3rem" }}>🏢</span>
+            )}
+          </div>
 
-        {/* Företagsinfo */}
-        <div style={{ flex: 1, minWidth: "300px" }}>
-          <h1 style={{ color: "var(--color-primary)", marginBottom: "0.5rem" }}>{user.companyName || user.name}</h1>
-          <p style={{ color: "var(--color-text-secondary)", marginBottom: "1.5rem", maxWidth: "600px", lineHeight: 1.6 }}>
-            {user.companyDescription || "Välkommen till vår butik/vår sida! (Fyll i en beskrivning under inställningar)"}
-          </p>
-
-          <div className="grid-2-col" style={{ maxWidth: "500px", gap: "1rem" }}>
-            {user.companyAddress && <div>📍 {user.companyAddress}, {user.companyCity}</div>}
-            {user.companyOpeningHours && <div>🕒 {user.companyOpeningHours}</div>}
-            {user.companyPhone && <div>📞 {user.companyPhone}</div>}
-            {user.companyWebsite && <div>🌐 <a href={user.companyWebsite} rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>}
-            {user.companyOrgNr && <div>📋 Org.nr: {user.companyOrgNr}</div>}
+          {/* Företagsinfo */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            
+            {/* Titel */}
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: "1.5rem" }}>
+              <div style={{ flex: "1 1 300px" }}>
+                <h1 style={{ color: "var(--color-text-primary)", fontSize: "2.2rem", fontWeight: 800, marginBottom: "0.2rem" }}>{user.companyName || user.name}</h1>
+                <p style={{ color: "var(--color-text-secondary)", fontSize: "1.1rem", maxWidth: "800px", lineHeight: 1.6, margin: 0 }}>
+                  {user.companyDescription || "Välkommen till vår butik/vår sida! (Fyll i en beskrivning under inställningar)"}
+                </p>
+              </div>
+            </div>
+            
+            {/* Kontakt & Info-piller */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem", paddingTop: "0.5rem", borderTop: "1px solid var(--color-border)" }}>
+              {user.companyAddress && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📍</span> {user.companyAddress}, {user.companyCity}
+                </span>
+              )}
+              {user.companyPhone && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📞</span> {user.companyPhone}
+                </span>
+              )}
+              {user.companyWebsite && (
+                <a href={user.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "rgba(37, 99, 235, 0.05)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-primary)", fontWeight: 600, border: "1px solid rgba(37, 99, 235, 0.2)", textDecoration: "none" }}>
+                  <span style={{ fontSize: "1.1rem" }}>🌐</span> Besök hemsida
+                </a>
+              )}
+              {user.companyOpeningHours && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>🕒</span> {user.companyOpeningHours}
+                </span>
+              )}
+              {user.companyOrgNr && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📋</span> Org.nr: {user.companyOrgNr}
+                </span>
+              )}
+            </div>
+            
           </div>
         </div>
       </div>
