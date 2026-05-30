@@ -37,25 +37,31 @@ export async function middleware(request: NextRequest) {
 
     // Om rate limiting är aktiverat
     if (ratelimit) {
-      // Försök hämta användarens IP (Vercel använder x-forwarded-for)
-      const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
-      
-      const { success, limit, reset, remaining } = await ratelimit.limit(ip);
-      
-      // Boten är för aggressiv -> Returnera HTTP 429 Too Many Requests
-      if (!success) {
-        return new NextResponse(
-          JSON.stringify({ error: "Too Many Requests. Snälla vänta en minut innan du försöker igen." }), 
-          {
-            status: 429,
-            headers: {
-              "Content-Type": "application/json",
-              "X-RateLimit-Limit": limit.toString(),
-              "X-RateLimit-Remaining": remaining.toString(),
-              "X-RateLimit-Reset": reset.toString(),
-            },
-          }
-        );
+      try {
+        // Försök hämta användarens IP (Vercel använder x-forwarded-for)
+        const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
+        
+        const { success, limit, reset, remaining } = await ratelimit.limit(ip);
+        
+        // Boten är för aggressiv -> Returnera HTTP 429 Too Many Requests
+        if (!success) {
+          return new NextResponse(
+            JSON.stringify({ error: "Too Many Requests. Snälla vänta en minut innan du försöker igen." }), 
+            {
+              status: 429,
+              headers: {
+                "Content-Type": "application/json",
+                "X-RateLimit-Limit": limit.toString(),
+                "X-RateLimit-Remaining": remaining.toString(),
+                "X-RateLimit-Reset": reset.toString(),
+              },
+            }
+          );
+        }
+      } catch (ratelimitError) {
+        console.error("Rate limit check failed (Upstash redis error):", ratelimitError);
+        // Fallback: Låt anropet gå igenom om Redis tillfälligt är nere
+        return NextResponse.next();
       }
     }
   }
