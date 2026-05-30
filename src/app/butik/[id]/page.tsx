@@ -72,87 +72,89 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
       <div className="glass-panel" style={{ marginBottom: "3rem", overflow: "hidden", position: "relative", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)" }}>
         
         {/* Banner Gradient */}
-        <div style={{ height: "180px", background: "linear-gradient(135deg, var(--color-primary), #1e40af)", position: "relative" }}>
-          {/* Subtil dekorations-cirkel för mer premiumkänsla */}
-          <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.1)" }}></div>
+        <div style={{ height: "180px", background: "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)", position: "relative" }}>
+          <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "250px", height: "250px", borderRadius: "50%", background: "rgba(255,255,255,0.05)" }}></div>
+          <div style={{ position: "absolute", bottom: "-50px", left: "20%", width: "150px", height: "150px", borderRadius: "50%", background: "rgba(255,255,255,0.03)" }}></div>
         </div>
         
         <div style={{ padding: "0 2rem 2rem 2rem", position: "relative", zIndex: 2 }}>
           {/* Logga överlappande */}
           <div style={{ 
             marginTop: "-60px", 
-            marginBottom: "1rem", 
-            width: "120px", 
-            height: "120px", 
-            backgroundColor: "var(--color-bg)", 
+            marginBottom: "1.5rem", 
+            width: "130px", 
+            height: "130px", 
+            backgroundColor: "#ffffff", 
             borderRadius: "var(--radius-md)", 
             display: "inline-flex", 
             alignItems: "center", 
             justifyContent: "center", 
             overflow: "hidden", 
-            border: "4px solid var(--color-bg)", 
-            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+            border: "4px solid #ffffff", 
+            boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
             flexShrink: 0
           }}>
             {user.companyLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.companyLogoUrl} alt={user.companyName || "Logotyp"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", backgroundColor: 'white' }} />
             ) : (
-              <span style={{ fontSize: "2.5rem" }}>🏢</span>
+              <span style={{ fontSize: "3rem" }}>🏢</span>
             )}
           </div>
 
           {/* Företagsinfo */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div style={{ flex: "1 1 500px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
-                <div>
-                  <h1 style={{ color: "var(--color-text-primary)", fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>{user.companyName || user.name}</h1>
-                  <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", marginBottom: "1.5rem", maxWidth: "800px", lineHeight: 1.6 }}>
-                    {user.companyDescription || "Välkommen till vår företagssida!"}
-                  </p>
-                </div>
-                
-                {session?.user?.id !== user.id && (
-                  <div style={{ width: "200px", flexShrink: 0 }}>
-                    <FollowButton 
-                      authorId={user.id} 
-                      authorName={user.companyName || user.name || ""} 
-                      initialIsFollowing={isFollowing} 
-                      isLoggedIn={!!session?.user?.id} 
-                    />
-                  </div>
-                )}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            
+            {/* Titel och Följ-knapp */}
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: "1.5rem" }}>
+              <div style={{ flex: "1 1 300px" }}>
+                <h1 style={{ color: "var(--color-text-primary)", fontSize: "2.2rem", fontWeight: 800, marginBottom: "0.2rem" }}>{user.companyName || user.name}</h1>
+                <p style={{ color: "var(--color-text-secondary)", fontSize: "1.1rem", maxWidth: "800px", lineHeight: 1.6, margin: 0 }}>
+                  {user.companyDescription || "Välkommen till vår företagssida!"}
+                </p>
               </div>
               
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-                {user.companyAddress && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
-                    <span style={{ fontSize: "1rem" }}>📍</span> {user.companyAddress}, {user.companyCity}
-                  </span>
-                )}
-                {user.companyPhone && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
-                    <span style={{ fontSize: "1rem" }}>📞</span> {user.companyPhone}
-                  </span>
-                )}
-                {user.companyWebsite && (
-                  <a href={user.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "rgba(37, 99, 235, 0.05)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-primary)", fontWeight: 600, border: "1px solid rgba(37, 99, 235, 0.2)", textDecoration: "none" }}>
-                    <span style={{ fontSize: "1rem" }}>🌐</span> Besök hemsida
-                  </a>
-                )}
-                {user.companyOpeningHours && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
-                    <span style={{ fontSize: "1rem" }}>🕒</span> {user.companyOpeningHours}
-                  </span>
-                )}
-                {user.companyOrgNr && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
-                    <span style={{ fontSize: "1rem" }}>📋</span> Org.nr: {user.companyOrgNr}
-                  </span>
-                )}
-              </div>
+              {session?.user?.id !== user.id && (
+                <div style={{ flexShrink: 0 }}>
+                  <FollowButton 
+                    authorId={user.id} 
+                    authorName={user.companyName || user.name || ""} 
+                    initialIsFollowing={isFollowing} 
+                    isLoggedIn={!!session?.user?.id} 
+                  />
+                </div>
+              )}
             </div>
+            
+            {/* Kontakt & Info-piller */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem", paddingTop: "0.5rem", borderTop: "1px solid var(--color-border)" }}>
+              {user.companyAddress && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📍</span> {user.companyAddress}, {user.companyCity}
+                </span>
+              )}
+              {user.companyPhone && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📞</span> {user.companyPhone}
+                </span>
+              )}
+              {user.companyWebsite && (
+                <a href={user.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "rgba(37, 99, 235, 0.05)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-primary)", fontWeight: 600, border: "1px solid rgba(37, 99, 235, 0.2)", textDecoration: "none" }}>
+                  <span style={{ fontSize: "1.1rem" }}>🌐</span> Besök hemsida
+                </a>
+              )}
+              {user.companyOpeningHours && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>🕒</span> {user.companyOpeningHours}
+                </span>
+              )}
+              {user.companyOrgNr && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.95rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                  <span style={{ fontSize: "1.1rem" }}>📋</span> Org.nr: {user.companyOrgNr}
+                </span>
+              )}
+            </div>
+            
           </div>
         </div>
       </div>
