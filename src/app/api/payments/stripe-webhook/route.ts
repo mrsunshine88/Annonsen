@@ -61,7 +61,22 @@ export async function POST(req: Request) {
         }
         break;
       }
-      // Fler events kan hanteras här i framtiden (t.ex. customer.subscription.deleted)
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
+        if (subscription.customer) {
+          const customerId = subscription.customer as string;
+          // Prenumerationen avslutades -> Pausa annonsering
+          await prisma.user.updateMany({
+            where: { stripeCustomerId: customerId },
+            data: { 
+              canPublishAds: false,
+              hasActiveSubscription: false 
+            }
+          });
+          console.log(`⚠️ [Stripe Webhook] Prenumeration avslutad för kund ${customerId}. canPublishAds = false`);
+        }
+        break;
+      }
       default:
         console.log(`[Stripe Webhook] Ohanterat event: ${event.type}`);
     }

@@ -153,6 +153,23 @@ export default function SettingsPage() {
     }
   };
 
+  const handlePortalSession = async () => {
+    setPaymentLoading(true);
+    try {
+      const res = await fetch("/api/payments/create-portal-session", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showNotification(data.error || "Gick inte att öppna portalen", "error");
+      }
+    } catch (err) {
+      showNotification("Ett nätverksfel uppstod", "error");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: "800px" }}>
       <h2 style={{ marginBottom: '2rem' }}>Inställningar</h2>
@@ -216,30 +233,61 @@ export default function SettingsPage() {
             <h3 style={{ marginBottom: "1.5rem" }}>Fakturering & Prenumeration</h3>
             
             {hasActiveSubscription ? (
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem", backgroundColor: "rgba(16, 185, 129, 0.1)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-success)" }}>
-                <span style={{ fontSize: "1.5rem" }}>✅</span>
-                <div>
-                  <h4 style={{ margin: "0 0 0.25rem 0", color: "var(--color-success)" }}>Aktiv Prenumeration</h4>
-                  <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>Ditt konto är aktivt och du kan publicera annonser. Annonser faktureras automatiskt i slutet av månaden enligt din plan.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", padding: "1.5rem", backgroundColor: "rgba(16, 185, 129, 0.05)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-success)" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+                  <span style={{ fontSize: "1.5rem", marginTop: "0.2rem" }}>✅</span>
+                  <div>
+                    <h4 style={{ margin: "0 0 0.5rem 0", color: "var(--color-success)", fontSize: "1.1rem" }}>Aktiv Prenumeration</h4>
+                    <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5" }}>
+                      Din företagsprofil är fullt aktiverad! Du kan fritt publicera jobbannonser och vanliga annonser. Din månadskostnad ({companySubscriptionPrice} kr) debiteras automatiskt via Stripe.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ marginTop: "0.5rem", borderTop: "1px solid rgba(16, 185, 129, 0.2)", paddingTop: "1rem", display: "flex", justifyContent: "flex-end" }}>
+                  <button onClick={handlePortalSession} disabled={paymentLoading} className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    {paymentLoading ? "Laddar..." : "Hantera prenumeration (Säg upp / Byt kort)"}
+                  </button>
                 </div>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", padding: "1.5rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem", padding: "2rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)" }}>
                 <div>
-                  <h4 style={{ margin: "0 0 0.5rem 0" }}>Aktivering krävs</h4>
-                  <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "0.9rem", lineHeight: "1.5" }}>
-                    För att kunna publicera annonser måste du aktivera företagets prenumeration via Stripe. Ditt kort debiteras inte direkt för annonser, utan kostnaderna samlas ihop och faktureras automatiskt.
+                  <h4 style={{ margin: "0 0 1rem 0", fontSize: "1.2rem", color: "var(--color-primary)" }}>Lås upp obegränsad annonsering</h4>
+                  <p style={{ margin: "0 0 1.5rem 0", color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5" }}>
+                    Få tillgång till plattformens alla företagsfunktioner. Betalningen sker tryggt och automatiskt via Stripe.
                   </p>
+                  
+                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 2rem 0", display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                    <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                      <span style={{ color: "var(--color-success)" }}>✓</span> Obegränsat antal företagsannonser
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                      <span style={{ color: "var(--color-success)" }}>✓</span> Publicera jobbannonser för rekrytering
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                      <span style={{ color: "var(--color-success)" }}>✓</span> Företagssida med logotyp och presentation
+                    </li>
+                    <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                      <span style={{ color: "var(--color-success)" }}>✓</span> <strong>Ingen bindningstid</strong> – Avsluta prenumerationen när du vill
+                    </li>
+                  </ul>
                 </div>
-                <button 
-                  type="button"
-                  onClick={startSubscription} 
-                  disabled={paymentLoading}
-                  className="btn-primary" 
-                  style={{ width: "fit-content", display: "flex", alignItems: "center", gap: "0.5rem" }}
-                >
-                  {paymentLoading ? "Laddar..." : `💳 Aktivera Annonsering (${companySubscriptionPrice} kr / månad)`}
-                </button>
+                
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", borderTop: "1px solid var(--color-border)", paddingTop: "1.5rem" }}>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--color-text)" }}>{companySubscriptionPrice} kr</span>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>per månad (exkl. moms)</span>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={startSubscription} 
+                    disabled={paymentLoading}
+                    className="btn-primary" 
+                    style={{ padding: "0.8rem 1.5rem", fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                  >
+                    {paymentLoading ? "Laddar Stripe..." : "💳 Aktivera Annonsering"}
+                  </button>
+                </div>
               </div>
             )}
           </div>
