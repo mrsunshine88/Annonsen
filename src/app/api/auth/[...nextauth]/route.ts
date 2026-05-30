@@ -56,7 +56,8 @@ export const authOptions: any = {
           isRoot: user.isRoot,
           accountType: user.accountType,
           companyName: user.companyName,
-          companyLogoUrl: user.companyLogoUrl
+          companyLogoUrl: user.companyLogoUrl,
+          termsAccepted: user.termsAccepted
         };
       }
     })
@@ -70,9 +71,13 @@ export const authOptions: any = {
         token.accountType = (user as any).accountType;
         token.companyName = (user as any).companyName;
         token.companyLogoUrl = (user as any).companyLogoUrl;
+        token.termsAccepted = (user as any).termsAccepted;
       }
       if (trigger === "update" && session?.name) {
         token.name = session.name;
+      }
+      if (trigger === "update" && session?.termsAccepted) {
+        token.termsAccepted = true;
       }
       return token;
     },
@@ -84,6 +89,7 @@ export const authOptions: any = {
         (session.user as any).accountType = token.accountType as string;
         (session.user as any).companyName = token.companyName as string;
         (session.user as any).companyLogoUrl = token.companyLogoUrl as string;
+        (session.user as any).termsAccepted = token.termsAccepted as boolean;
       }
       return session;
     }

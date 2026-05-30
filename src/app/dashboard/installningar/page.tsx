@@ -320,7 +320,7 @@ export default function SettingsPage() {
                       <strong>Hur avslutar jag?</strong> Du binder inte upp dig på något! Du kan när som helst klicka på &quot;Hantera prenumeration&quot; här inne. Då skickas du till din egna kundportal där du med ett knapptryck kan avsluta din prenumeration.
                     </p>
                     <p style={{ margin: 0 }}>
-                      <strong>Vad händer vid uppsägning?</strong> Om du säger upp prenumerationen kommer ditt kort inte att debiteras igen. Ditt konto återgår till att vara spärrat för nya företagsannonser. Dina tidigare publicerade annonser hanteras enligt våra allmänna villkor.
+                      <strong>Vad händer vid uppsägning?</strong> Om du säger upp prenumerationen kommer ditt kort inte att debiteras vid nästa förnyelsedatum. Du behåller givetvis full tillgång till dina annonser och företagssidan hela din redan betalda period (fram till nästa dragningsdatum). Därefter spärras kontot för nya annonser.
                     </p>
                   </div>
                 )}

@@ -38,10 +38,11 @@ export async function POST(req: Request) {
             where: { stripeCustomerId: customerId },
             data: { 
               canPublishAds: true,
-              hasActiveSubscription: true
+              hasActiveSubscription: true,
+              companyPageApproved: true
             }
           });
-          console.log(`✅ [Stripe Webhook] Betalning lyckades för kund ${customerId}. canPublishAds = true`);
+          console.log(`✅ [Stripe Webhook] Betalning lyckades för kund ${customerId}. Allt aktiverat.`);
         }
         break;
       }

@@ -31,6 +31,7 @@ All data definieras i `prisma/schema.prisma`. Relationen är byggd med `onDelete
 - **Transaction (Swish):** En dedikerad modell för att förbereda systemet för Swish e-handel. Den använder ett unikt fält `swishReference @unique` för att garantera idempotens (förhindrar dubbelbetalningar på databasnivå).
 - **VerificationToken:** En säkerhetsmodell för "Glömt lösenord"-flödet. Använder ett sammansatt index (`@@unique([identifier, token])`) för extrema uppslagshastigheter och innehåller `expires` för att se till att länkar automatiskt blir ogiltiga efter 1 timme.
 - **Favorite, Follow, AdReport:** Modeller för att bokmärka annonser, följa företag/säljare och anmäla opassande annonser till admin. `AdReport` har bland annat ett fält `adminViewed` för att hålla koll på om en notis ska visas för administratörerna.
+- **ContactMessage:** En modell för det inbyggda kundtjänstsystemet. Sparar namn, e-post, telefon och det faktiska meddelandet när besökare kontaktar admin via `/kontakt`. Har fältet `isRead` för att admin ska kunna pricka av hanterade ärenden.
 
 ---
 
@@ -103,14 +104,17 @@ Betalningsflödet är helt dynamiskt och konfigureras i adminpanelen (`/admin/ko
 - **Swish Integration:** Swish-betalningar är helt integrerade med Merchant API via `/api/payments/swish` och webhooken `/api/payments/webhook`. Denna process utnyttjar en idempotent databasmodell (`Transaction` med unikt `swishReference`) för att garantera att dubbelbetalningar är omöjliga.
 
 #### Stripe för B2B (Företag och Arbetsgivare)
-För företagskonton används **Stripe Usage-based (Metered) Billing** för att eliminera manuell fakturering. Detta hanteras i följande steg:
-1. **Kund och Abonnemang:** I `User`-modellen sparas `stripeCustomerId` och `stripeSubscriptionItemId`.
-2. **Onboarding:** En företagskund startar prenumerationen via `/api/payments/create-checkout-session` vilket direkt genererar en Stripe Checkout Session (med fallback-mock om nycklar saknas).
-3. **Metered Billing:** När företaget skapar en ny annons eller jobbannons (`/api/ads`, `/api/jobb`), och om annonspriset är > 0, registreras annonsen omedelbart som `isPaid = true` lokalt, samtidigt som ett `usage record` trycks upp till Stripe. Stripe samlar dessa och drar allt på slutet av månaden.
-4. **Gratis-läge / Mock**: Om priset i Admin-panelen ställs till 0 kr, eller om Stripe-nycklar saknas i Vercel (`.env`), fångas anropet upp av en felsäker "Mock". Annonser publiceras direkt och en logg skrivs ut i terminalen.
-5. **Frontend Spärrar (Skarpt läge)**: Om företaget saknar prenumeration och godkännande döljs annonsformulären (`/skapa`, `/dashboard/jobb/skapa`) och ersätts med en varningsruta ("Aktivering krävs").
-6. **Aktivering via Dashboard**: Inne på `/dashboard/installningar` har företaget en knapp *"Aktivera Annonsering"*. Om `hasActiveSubscription` är false triggas `/api/payments/create-checkout-session` och slussar användaren till Stripe.
-7. **Auto-avstängning (Webhooks):** Den dygnet-runt-vakande `/api/payments/stripe-webhook` lyssnar efter `invoice.payment_failed` och `invoice.payment_succeeded`. Om ett företagskort studsar, sätter systemet automatiskt `canPublishAds = false` och döljer alla annonser fram tills fakturan är betald, utan manuell intervention från admin.
+För företagskonton används **Stripe Usage-based (Metered) Billing** kombinerat med fasta månadsavgifter för att eliminera manuell fakturering. Detta hanteras i följande steg:
+
+1. **Kund och Abonnemang:** I `User`-modellen sparas `stripeCustomerId` och `stripeSubscriptionItemId`. Systemet stöder separata prislappar (`companySubscriptionPrice` och `employerSubscriptionPrice`) i adminpanelen.
+2. **Dynamisk Onboarding (UX):** Inställningssidan (`/dashboard/installningar`) känner automatiskt av om användaren är av `accountType === "Företag"` eller `"Arbetsgivare"`. Den visar rätt prislapp och anpassar marknadsföringstexten (t.ex. visar "företagsannonser" för bilhandlare och "jobbannonser" för rekryterare). Dessutom har den en inbyggd FAQ-sektion via knappen "ℹ️ Läs mer" som minskar friktionen innan betalning.
+3. **Aktivering:** När kunden klickar på aktiveringsknappen triggas `/api/payments/create-checkout-session` och slussar användaren till Stripe. Om Stripe-nycklar saknas fångas anropet upp av en felsäker "Mock" som publicerar annonser direkt.
+4. **Metered Billing (Rörligt):** När företaget skapar en ny annons eller jobbannons registreras annonsen omedelbart som `isPaid = true` lokalt, samtidigt som ett `usage record` trycks upp till Stripe.
+5. **Stripe Customer Portal (Självbetjäning):** När en användare *har* en aktiv prenumeration ändras UI:t, och de får en knapp för att "Hantera prenumeration". Den anropar `/api/payments/create-portal-session` och skickar användaren till Stripes säkra kundportal. Där kan de uppdatera kortuppgifter, ladda ner kvitton eller säga upp sin prenumeration med ett knapptryck.
+6. **Auto-avstängning och Uppsägningar (Webhooks):** Den dygnet-runt-vakande `/api/payments/stripe-webhook` lyssnar ständigt efter händelser från Stripe.
+   - *Studsande kort:* Vid `invoice.payment_failed` sätts `canPublishAds = false` och annonser döljs tills fakturan är betald.
+   - *Uppsägning:* Om en användare säger upp avtalet i portalen triggas eventet `customer.subscription.deleted`. Webhooken fångar detta och stänger omedelbart av företagets möjligheter att annonsera vidare (`hasActiveSubscription = false`). Allt detta sker utan manuell inblandning från plattformsägaren.
+7. **Admin Stripe-Vy:** För att administratören ska ha full kontroll finns en dedikerad sida (`/admin/stripe`). Den anropar `/api/admin/stripe` för att lista alla B2B-konton, deras nuvarande prenumerationsstatus (Aktiv/Ej aktiv) och deras unika `Stripe Customer ID` paketerat i klickbara länkar som tar admin direkt in till rätt kundprofil i Stripe Dashboard.
 
 ### 5.5 E-post och Transaktionell Kommunikation
 Plattformen använder **Resend** (branschstandard för Next.js) via en isolerad centraltjänst i `src/lib/email.ts`. För att underlätta utveckling finns en smart fallback-logik: Om `RESEND_API_KEY` saknas i miljövariablerna, så "skickas" mejlet ut som en tydlig logg i terminalen istället för att krascha systemet. HTML-mallarna är skrivna i ren Vanilla-kod med inline-CSS som matchar "Glassmorphism"-designen.
@@ -118,6 +122,18 @@ Mejl skickas automatiserat vid tre viktiga knutpunkter:
 1. **Jobbansökningar:** När ett CV laddas upp får arbetsgivaren direkt ett mejl. *Varför är det smart?* Mejlet skickas med en `replyTo`-header konfigurerad till kandidatens e-post. Detta låter arbetsgivaren klicka "Svara" i Gmail och omedelbart börja prata med sökanden utanför plattformen om de föredrar det.
 2. **Onboarding:** När en admin trycker "Godkänn" på ett B2B-konto skjuts ett välkomstmejl iväg med länk direkt till skapande av annonser.
 3. **Glömt Lösenord:** Sidan för att återställa lösenord genererar en kryptografisk token (via inbyggda modulen `crypto`) och sparar den i `VerificationToken`. *Varför är det säkert?* API-routen (`/api/auth/forgot-password`) returnerar *alltid* HTTP 200 OK och ett standardmeddelande oavsett om mejladressen fanns i databasen eller ej. Detta är ett försvar mot "User Enumeration", vilket hindrar botar från att lista ut vilka som har konton. När token sedan valideras vid uppdateringen av lösenordet används en ACID-transaktion för att samtidigt byta lösenord (krypterat med bcrypt) och permanent radera token-koden från databasen.
+
+### 5.5 GDPR och Tvingande Villkor (Säker Onboarding)
+För att säkerställa 100% efterlevnad av svensk lag och GDPR använder vi oss av en tvingande "Interceptor"-modal (`TermsModal.tsx`).
+- När en användare loggar in kontrolleras databasfältet `termsAccepted`.
+- Om detta fält är `false` (vilket det är för alla nya och gamla konton som inte godkänt ännu), läggs en oundviklig, skärmtäckande modal ovanpå hela gränssnittet. Användaren tvingas läsa och kryssa i att de accepterar våra **Användarvillkor** och **Integritetspolicy** innan de kan göra något alls på plattformen.
+- Vid klick på "Jag godkänner" anropas `/api/user/accept-terms` som sätter `termsAccepted = true` varpå modalen stängs permanent. Sessionen uppdateras lokalt via NextAuths `update`-funktion för att slippa ladda om sidan.
+
+### 5.6 Inbyggd Kundtjänst (Kontaktformulär)
+Plattformen har ett inbyggt CRM-liknande kundtjänstflöde:
+1. **Publik Sida:** På `/kontakt` kan besökare fylla i namn, e-post, telefon och ett meddelande.
+2. **Databas (ContactMessage):** Meddelandet sparas i en separat databas-tabell (`ContactMessage`), istället för att skicka ett osäkert mail direkt.
+3. **Admin Panel:** Administratörer navigerar till `/admin/kontakt` för att läsa alla inkomna meddelanden. Listan uppdateras dynamiskt och admin kan markera ärenden som "lästa" via ett API (`PATCH /api/admin/contact`) när de svarat användaren från sin egen e-postklient.
 
 ---
 

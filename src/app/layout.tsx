@@ -8,6 +8,8 @@ import Link from "next/link";
 
 import Navbar from "@/components/Navbar";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import Footer from "@/components/Footer";
+import TermsModal from "@/components/TermsModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,14 +41,16 @@ export default async function RootLayout({
   // Session hanteras nu i Navbar (Client Component)
   return (
     <html lang="sv">
-      <body className={inter.className}>
+      <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <Providers>
           <NotificationProvider>
             <ServiceWorkerRegister />
             <Navbar />
-            <main className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '2rem', paddingBottom: '2rem' }}>
+            <TermsModal />
+            <main className="container" style={{ position: 'relative', zIndex: 1, paddingTop: '2rem', paddingBottom: '2rem', flex: 1 }}>
               {children}
             </main>
+            <Footer />
           </NotificationProvider>
         </Providers>
       </body>

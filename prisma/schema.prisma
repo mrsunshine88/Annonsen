@@ -18,6 +18,7 @@ model User {
   isAdmin          Boolean   @default(false)
   isRoot           Boolean   @default(false) // Skyddar kontot från att tas bort eller ändras i admin
   isBlocked        Boolean   @default(false)
+  termsAccepted    Boolean   @default(false) // Måste godkännas vid inloggning
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -280,4 +281,14 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
