@@ -30,6 +30,7 @@ export default function SettingsPage() {
   const [canPublishAds, setCanPublishAds] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [companySubscriptionPrice, setCompanySubscriptionPrice] = useState(0);
+  const [showSubInfo, setShowSubInfo] = useState(false);
 
   useEffect(() => {
     fetch("/api/user/settings")
@@ -258,14 +259,21 @@ export default function SettingsPage() {
                   </p>
                   
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 2rem 0", display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                    
+                    {accountType === "Företag" && (
+                      <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                        <span style={{ color: "var(--color-success)" }}>✓</span> Obegränsat antal företagsannonser (T.ex. fordon, tjänster, produkter)
+                      </li>
+                    )}
+                    
+                    {accountType === "Arbetsgivare" && (
+                      <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
+                        <span style={{ color: "var(--color-success)" }}>✓</span> Publicera jobbannonser för rekrytering
+                      </li>
+                    )}
+
                     <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
-                      <span style={{ color: "var(--color-success)" }}>✓</span> Obegränsat antal företagsannonser
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
-                      <span style={{ color: "var(--color-success)" }}>✓</span> Publicera jobbannonser för rekrytering
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
-                      <span style={{ color: "var(--color-success)" }}>✓</span> Företagssida med logotyp och presentation
+                      <span style={{ color: "var(--color-success)" }}>✓</span> {accountType === "Företag" ? "Företagssida" : "Arbetsgivarsida"} med logotyp och presentation
                     </li>
                     <li style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.95rem" }}>
                       <span style={{ color: "var(--color-success)" }}>✓</span> <strong>Ingen bindningstid</strong> – Avsluta prenumerationen när du vill
@@ -278,16 +286,44 @@ export default function SettingsPage() {
                     <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--color-text)" }}>{companySubscriptionPrice} kr</span>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>per månad (exkl. moms)</span>
                   </div>
-                  <button 
-                    type="button"
-                    onClick={startSubscription} 
-                    disabled={paymentLoading}
-                    className="btn-primary" 
-                    style={{ padding: "0.8rem 1.5rem", fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
-                  >
-                    {paymentLoading ? "Laddar Stripe..." : "💳 Aktivera Annonsering"}
-                  </button>
+                  <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                    <button 
+                      type="button"
+                      onClick={() => setShowSubInfo(!showSubInfo)} 
+                      className="btn-secondary" 
+                      style={{ padding: "0.8rem 1.5rem", fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                    >
+                      ℹ️ Läs mer
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={startSubscription} 
+                      disabled={paymentLoading}
+                      className="btn-primary" 
+                      style={{ padding: "0.8rem 1.5rem", fontSize: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                    >
+                      {paymentLoading ? "Laddar Stripe..." : "💳 Aktivera Annonsering"}
+                    </button>
+                  </div>
                 </div>
+
+                {showSubInfo && (
+                  <div style={{ marginTop: "1rem", padding: "1.5rem", backgroundColor: "var(--color-bg-surface)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", fontSize: "0.95rem", lineHeight: "1.6", color: "var(--color-text-secondary)" }}>
+                    <h5 style={{ margin: "0 0 1rem 0", color: "var(--color-primary)", fontSize: "1.1rem" }}>Så här fungerar prenumerationen</h5>
+                    <p style={{ margin: "0 0 0.8rem 0" }}>
+                      <strong>Hur tecknar jag?</strong> Klicka på &quot;Aktivera Annonsering&quot;. Du omdirigeras till Stripes säkra betalningssida där du anger dina kortuppgifter. Så fort betalningen är godkänd låses alla funktioner upp direkt.
+                    </p>
+                    <p style={{ margin: "0 0 0.8rem 0" }}>
+                      <strong>När dras pengarna?</strong> Kostnaden ({companySubscriptionPrice} kr/månad) dras i förskott varje månad på samma datum som du startade prenumerationen. Alla dina kvitton sparas hos Stripe.
+                    </p>
+                    <p style={{ margin: "0 0 0.8rem 0" }}>
+                      <strong>Hur avslutar jag?</strong> Du binder inte upp dig på något! Du kan när som helst klicka på &quot;Hantera prenumeration&quot; här inne. Då skickas du till din egna kundportal där du med ett knapptryck kan avsluta din prenumeration.
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      <strong>Vad händer vid uppsägning?</strong> Om du säger upp prenumerationen kommer ditt kort inte att debiteras igen. Ditt konto återgår till att vara spärrat för nya företagsannonser. Dina tidigare publicerade annonser hanteras enligt våra allmänna villkor.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

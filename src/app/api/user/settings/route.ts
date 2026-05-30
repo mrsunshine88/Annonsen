@@ -35,9 +35,17 @@ export async function GET(req: Request) {
 
     const settings = await prisma.settings.findUnique({ where: { id: "default" } });
 
+    // Hämta rätt pris baserat på kontotyp (Företag vs Arbetsgivare)
+    let subscriptionPrice = 0;
+    if (user?.accountType === "Företag") {
+      subscriptionPrice = settings?.companySubscriptionPrice || 0;
+    } else if (user?.accountType === "Arbetsgivare") {
+      subscriptionPrice = settings?.employerSubscriptionPrice || 0;
+    }
+
     return NextResponse.json({
       ...user,
-      companySubscriptionPrice: settings?.companySubscriptionPrice || 0
+      companySubscriptionPrice: subscriptionPrice
     });
   } catch (error) {
     return NextResponse.json({ error: "Ett fel uppstod" }, { status: 500 });

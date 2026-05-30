@@ -8,10 +8,10 @@ export default function AdminKostnadPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  // Settings
   const [paymentsEnabled, setPaymentsEnabled] = useState(false);
   const [defaultAdPrice, setDefaultAdPrice] = useState<number | "">(0);
   const [companySubscriptionPrice, setCompanySubscriptionPrice] = useState<number | "">(0);
+  const [employerSubscriptionPrice, setEmployerSubscriptionPrice] = useState<number | "">(0);
   const [bumpEnabled, setBumpEnabled] = useState(false);
   const [bumpPrice, setBumpPrice] = useState<number | "">(0);
   const [swishMode, setSwishMode] = useState("TEST");
@@ -57,6 +57,7 @@ export default function AdminKostnadPage() {
       setPaymentsEnabled(settings.paymentsEnabled);
       setDefaultAdPrice(settings.defaultAdPrice);
       setCompanySubscriptionPrice(settings.companySubscriptionPrice || 0);
+      setEmployerSubscriptionPrice(settings.employerSubscriptionPrice || 0);
       setBumpEnabled(settings.bumpEnabled || false);
       setBumpPrice(settings.bumpPrice || 0);
       setSwishMode(settings.swishMode || "TEST");
@@ -79,7 +80,7 @@ export default function AdminKostnadPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          paymentsEnabled, defaultAdPrice, companySubscriptionPrice, swishMode, swishAlias, swishCert, swishKey,
+          paymentsEnabled, defaultAdPrice, companySubscriptionPrice, employerSubscriptionPrice, swishMode, swishAlias, swishCert, swishKey,
           bumpEnabled, bumpPrice
         })
       });
@@ -142,6 +143,15 @@ export default function AdminKostnadPage() {
               className="input-field" 
               value={companySubscriptionPrice} 
               onChange={e => setCompanySubscriptionPrice(e.target.value === "" ? "" : Number(e.target.value))} 
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}>Arbetsgivare: Prenumeration (kr/mån)</label>
+            <input 
+              type="number" 
+              className="input-field" 
+              value={employerSubscriptionPrice} 
+              onChange={e => setEmployerSubscriptionPrice(e.target.value === "" ? "" : Number(e.target.value))} 
             />
           </div>
         </div>
