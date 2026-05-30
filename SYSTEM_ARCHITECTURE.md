@@ -121,6 +121,8 @@ src/
 ## 7. Frontend Design & Responsivitet
 Vi undvek Tailwind (på beställning) och byggde en ren, egen design med Vanilla CSS i `globals.css`:
 - **Glassmorphism:** Vi använder flitigt `.glass-panel` för att skapa kort och containers med frostad glas-effekt (`backdrop-filter`).
+- **Företagssidor:** Företagssidor (`/butik/[id]`) har fått en premium-design. Den innefattar en dynamisk CSS-gradient som hero-banner, en överlappande logotyp med skuggning (box-shadow), och kontaktinformation (öppettider, org.nr etc) uppdelade i "piller" (span-element) för maximal läsbarhet och en "premium SaaS"-känsla.
+- **Jobb-kort:** Jobbannonser som visas i rutnät (grids), t.ex. på företagssidan eller i flödet, använder en elegant gradient (`linear-gradient(135deg, var(--color-primary), #1e40af)`) i kombination med subtila cirkel-skuggor och explicit vit textskugga för att säkerställa perfekt kontrast och en modern look.
 - **Layout:** Klasserna `.grid-2-col` och `.responsive-flex` används rakt igenom hela systemet. På skrivbord visar de side-by-side layouter, men via CSS media-queries (`@media (max-width: 768px)`) faller de automatiskt ner i en enkel kolumn på mobiltelefoner.
 - **Teman:** Alla färger hämtas via CSS-variabler (`var(--color-primary)`). Detta gör att det är extremt enkelt att implementera eller finjustera dark mode genom att enbart ändra variablerna i en `@media (prefers-color-scheme: dark)`-block.
 

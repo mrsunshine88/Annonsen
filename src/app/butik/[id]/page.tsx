@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import FollowButton from "@/components/FollowButton";
 
 const prisma = new PrismaClient();
 
@@ -23,6 +26,21 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
       }
     }
   });
+
+  const session: any = await getServerSession(authOptions);
+  
+  let isFollowing = false;
+  if (session?.user?.id) {
+    const follow = await prisma.follow.findUnique({
+      where: {
+        followerId_followedId: {
+          followerId: session.user.id,
+          followedId: resolvedParams.id
+        }
+      }
+    });
+    isFollowing = !!follow;
+  }
 
   if (!user || (user.accountType !== "Företag" && user.accountType !== "Arbetsgivare")) {
     notFound();
@@ -50,32 +68,91 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
         <BackButton label="Tillbaka" />
       </div>
 
-      {/* Header för Företaget */}
-      <div className="glass-panel" style={{ padding: "3rem 2rem", marginBottom: "3rem", display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "center" }}>
+      {/* Hero för Företaget */}
+      <div className="glass-panel" style={{ marginBottom: "3rem", overflow: "hidden", position: "relative", border: "1px solid var(--color-border)", borderRadius: "var(--radius-lg)" }}>
         
-        {/* Logga */}
-        <div style={{ flexShrink: 0, width: "150px", height: "150px", backgroundColor: "var(--color-bg-subtle)", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-          {user.companyLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.companyLogoUrl} alt={user.companyName || "Logotyp"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-          ) : (
-            <span style={{ fontSize: "3rem" }}>🏢</span>
-          )}
+        {/* Banner Gradient */}
+        <div style={{ height: "180px", background: "linear-gradient(135deg, var(--color-primary), #1e40af)", position: "relative" }}>
+          {/* Subtil dekorations-cirkel för mer premiumkänsla */}
+          <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.1)" }}></div>
         </div>
+        
+        <div style={{ padding: "0 2rem 2rem 2rem", position: "relative", zIndex: 2 }}>
+          {/* Logga överlappande */}
+          <div style={{ 
+            marginTop: "-60px", 
+            marginBottom: "1rem", 
+            width: "120px", 
+            height: "120px", 
+            backgroundColor: "var(--color-bg)", 
+            borderRadius: "var(--radius-md)", 
+            display: "inline-flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            overflow: "hidden", 
+            border: "4px solid var(--color-bg)", 
+            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+            flexShrink: 0
+          }}>
+            {user.companyLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.companyLogoUrl} alt={user.companyName || "Logotyp"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", backgroundColor: 'white' }} />
+            ) : (
+              <span style={{ fontSize: "2.5rem" }}>🏢</span>
+            )}
+          </div>
 
-        {/* Företagsinfo */}
-        <div style={{ flex: 1, minWidth: "300px" }}>
-          <h1 style={{ color: "var(--color-primary)", marginBottom: "0.5rem" }}>{user.companyName || user.name}</h1>
-          <p style={{ color: "var(--color-text-secondary)", marginBottom: "1.5rem", maxWidth: "600px", lineHeight: 1.6 }}>
-            {user.companyDescription || "Välkommen till vår butik!"}
-          </p>
-
-          <div className="grid-2-col" style={{ maxWidth: "500px", gap: "1rem" }}>
-            {user.companyAddress && <div>📍 {user.companyAddress}, {user.companyCity}</div>}
-            {user.companyOpeningHours && <div>🕒 {user.companyOpeningHours}</div>}
-            {user.companyPhone && <div>📞 {user.companyPhone}</div>}
-            {user.companyWebsite && <div>🌐 <a href={user.companyWebsite} rel="noopener noreferrer" style={{ color: "var(--color-primary)" }}>Besök hemsida</a></div>}
-            {user.companyOrgNr && <div>📋 Org.nr: {user.companyOrgNr}</div>}
+          {/* Företagsinfo */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ flex: "1 1 500px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
+                <div>
+                  <h1 style={{ color: "var(--color-text-primary)", fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>{user.companyName || user.name}</h1>
+                  <p style={{ color: "var(--color-text-secondary)", fontSize: "1.05rem", marginBottom: "1.5rem", maxWidth: "800px", lineHeight: 1.6 }}>
+                    {user.companyDescription || "Välkommen till vår företagssida!"}
+                  </p>
+                </div>
+                
+                {session?.user?.id !== user.id && (
+                  <div style={{ width: "200px", flexShrink: 0 }}>
+                    <FollowButton 
+                      authorId={user.id} 
+                      authorName={user.companyName || user.name || ""} 
+                      initialIsFollowing={isFollowing} 
+                      isLoggedIn={!!session?.user?.id} 
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
+                {user.companyAddress && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                    <span style={{ fontSize: "1rem" }}>📍</span> {user.companyAddress}, {user.companyCity}
+                  </span>
+                )}
+                {user.companyPhone && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                    <span style={{ fontSize: "1rem" }}>📞</span> {user.companyPhone}
+                  </span>
+                )}
+                {user.companyWebsite && (
+                  <a href={user.companyWebsite} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "rgba(37, 99, 235, 0.05)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-primary)", fontWeight: 600, border: "1px solid rgba(37, 99, 235, 0.2)", textDecoration: "none" }}>
+                    <span style={{ fontSize: "1rem" }}>🌐</span> Besök hemsida
+                  </a>
+                )}
+                {user.companyOpeningHours && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                    <span style={{ fontSize: "1rem" }}>🕒</span> {user.companyOpeningHours}
+                  </span>
+                )}
+                {user.companyOrgNr && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", backgroundColor: "var(--color-bg-subtle)", borderRadius: "100px", fontSize: "0.9rem", color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" }}>
+                    <span style={{ fontSize: "1rem" }}>📋</span> Org.nr: {user.companyOrgNr}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -124,9 +201,10 @@ export default async function CompanyStorePage({ params }: { params: Promise<{ i
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
             {user.jobAds.map(job => (
               <Link key={job.id} href={`/jobb/${job.id}`} className="glass-panel hover-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}>
-                <div style={{ height: '150px', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center' }}>
-                  <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', marginBottom: '1rem', fontWeight: 'bold', letterSpacing: '1px' }}>JOBB</span>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{job.title}</h3>
+                <div style={{ height: '150px', background: 'linear-gradient(135deg, var(--color-primary), #1e40af)', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center', position: 'relative' }}>
+                  <div style={{ position: "absolute", top: "-30px", left: "-30px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.1)" }}></div>
+                  <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', marginBottom: '1rem', fontWeight: 'bold', letterSpacing: '1px', zIndex: 1, color: 'white' }}>JOBB</span>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', color: 'white', zIndex: 1, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{job.title}</h3>
                 </div>
                 <div style={{ padding: '1rem' }}>
                   <div style={{ color: 'var(--color-text)', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.95rem' }}>{job.scope} • {job.duration}</div>

@@ -9,6 +9,10 @@ export default function HandleApplicationButton({ applicationId, currentStatus }
 
   const isHandled = currentStatus === "Hanterad";
 
+  if (isHandled) {
+    return null;
+  }
+
   const toggleStatus = async () => {
     setLoading(true);
     try {
