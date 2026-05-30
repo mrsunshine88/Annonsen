@@ -21,6 +21,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Användare hittades inte" }, { status: 404 });
     }
 
+    // Failsafe/Mock för lokal miljö om Stripe-nycklar saknas
+    if (!process.env.STRIPE_SECRET_KEY) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { hasActiveSubscription: true, canPublishAds: true, companyPageApproved: true, stripeSubscriptionItemId: "mock_sub_item" }
+      });
+      return NextResponse.json({ url: "/dashboard?success=true" });
+    }
+
     // Om de inte har en kund i Stripe, skapa den
     let stripeCustomerId = user.stripeCustomerId;
     if (!stripeCustomerId) {
@@ -41,15 +50,6 @@ export async function POST(req: Request) {
     const { priceId } = await req.json(); // T.ex. den fasta månadskostnadens pris-ID från inställningar
 
     if (!priceId) {
-       // För lokal dev om inget ID skickas
-       if (!process.env.STRIPE_SECRET_KEY) {
-          // Fake success
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { hasActiveSubscription: true, canPublishAds: true, stripeSubscriptionItemId: "mock_sub_item" }
-          });
-          return NextResponse.json({ url: "/dashboard?success=true" });
-       }
        return NextResponse.json({ error: "Saknar pris-ID" }, { status: 400 });
     }
 
