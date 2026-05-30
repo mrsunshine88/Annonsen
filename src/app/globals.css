@@ -303,9 +303,7 @@ h3 { font-size: 1.5rem; margin-bottom: 1rem; }
 
 /* Navbar specific */
 .navbar-header {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background-color: var(--color-bg-surface);
   position: sticky;
   top: 1rem;
   z-index: 1000;
