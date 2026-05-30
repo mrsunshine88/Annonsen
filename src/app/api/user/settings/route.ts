@@ -33,7 +33,12 @@ export async function GET(req: Request) {
       }
     });
 
-    return NextResponse.json(user);
+    const settings = await prisma.settings.findUnique({ where: { id: "default" } });
+
+    return NextResponse.json({
+      ...user,
+      companySubscriptionPrice: settings?.companySubscriptionPrice || 0
+    });
   } catch (error) {
     return NextResponse.json({ error: "Ett fel uppstod" }, { status: 500 });
   }

@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [canPublishAds, setCanPublishAds] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [companySubscriptionPrice, setCompanySubscriptionPrice] = useState(0);
 
   useEffect(() => {
     fetch("/api/user/settings")
@@ -51,6 +52,7 @@ export default function SettingsPage() {
         
         if (data.hasActiveSubscription !== undefined) setHasActiveSubscription(data.hasActiveSubscription);
         if (data.canPublishAds !== undefined) setCanPublishAds(data.canPublishAds);
+        if (data.companySubscriptionPrice !== undefined) setCompanySubscriptionPrice(data.companySubscriptionPrice);
       });
   }, []);
 
@@ -236,7 +238,7 @@ export default function SettingsPage() {
                   className="btn-primary" 
                   style={{ width: "fit-content", display: "flex", alignItems: "center", gap: "0.5rem" }}
                 >
-                  {paymentLoading ? "Laddar..." : "💳 Aktivera Annonsering (Stripe)"}
+                  {paymentLoading ? "Laddar..." : `💳 Aktivera Annonsering (${companySubscriptionPrice} kr / månad)`}
                 </button>
               </div>
             )}
