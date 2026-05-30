@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         where: { id: user.id },
         data: { hasActiveSubscription: true, canPublishAds: true, companyPageApproved: true, stripeSubscriptionItemId: "mock_sub_item" }
       });
-      return NextResponse.json({ url: "/dashboard?success=true" });
+      return NextResponse.json({ url: "/dashboard/installningar?success=true" });
     }
 
     // Om de inte har en kund i Stripe, skapa den
@@ -64,8 +64,8 @@ export async function POST(req: Request) {
           quantity: 1
         }
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard?cancel=true`
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/installningar?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/installningar?cancel=true`
     });
 
     return NextResponse.json({ url: checkoutSession.url });

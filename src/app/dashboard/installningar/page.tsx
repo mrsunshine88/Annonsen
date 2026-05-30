@@ -135,11 +135,17 @@ export default function SettingsPage() {
 
   const startSubscription = async () => {
     setPaymentLoading(true);
+    
+    // Välj rätt Stripe-pris baserat på kontotyp
+    const priceIdToUse = accountType === "Arbetsgivare" 
+      ? (process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_EMPLOYER || process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || "mock_price_employer")
+      : (process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_COMPANY || process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || "mock_price_company");
+
     try {
       const res = await fetch("/api/payments/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || "mock_price" })
+        body: JSON.stringify({ priceId: priceIdToUse })
       });
       const data = await res.json();
       if (data.url) {
@@ -240,7 +246,7 @@ export default function SettingsPage() {
                   <div>
                     <h4 style={{ margin: "0 0 0.5rem 0", color: "var(--color-success)", fontSize: "1.1rem" }}>Aktiv Prenumeration</h4>
                     <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: "1.5" }}>
-                      Din företagsprofil är fullt aktiverad! Du kan fritt publicera jobbannonser och vanliga annonser. Din månadskostnad ({companySubscriptionPrice} kr) debiteras automatiskt via Stripe.
+                      Din profil är fullt aktiverad! Du kan nu fritt publicera {accountType === "Arbetsgivare" ? "jobbannonser" : "dina företagsannonser"}. Din månadskostnad ({companySubscriptionPrice} kr) debiteras automatiskt via Stripe.
                     </p>
                   </div>
                 </div>
